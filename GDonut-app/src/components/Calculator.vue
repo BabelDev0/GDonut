@@ -17,7 +17,7 @@
         Your browser does not support the HTML5 canvas tag.</canvas
       >
       <div class="row justify-start">
-        <small>{{ xCanvas }}X{{ yCanvas }} </small>
+        <small>{{ xCanvas }} X {{ yCanvas }} </small>
       </div>
     </div>
   </div>
@@ -32,6 +32,27 @@
       Your browser does not support the HTML5 canvas tag.</canvas
     >
   </div>
+
+  <q-dialog v-model="alertPopup">
+    <q-card>
+      <q-card-section>
+        <div class="text-h6">Errore nel polinomio inserito</div>
+      </q-card-section>
+
+      <q-card-section class="q-pt-none">
+        the polynomial in input contains wrong or compound characters in an
+        erroneous formulation:
+        <br />
+        permutants allowed are : a_1(x,y) | a_2(degree)
+        <br />
+        shortcut: halfX = (image width)/2 | halfY = (image height)/2
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn flat label="OK" color="primary" v-close-popup />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
@@ -51,12 +72,19 @@ var testImgMatrix: Matrix;
 const xCanvas = ref<number>(0);
 const yCanvas = ref<number>(0);
 
+var alertPopup = ref<boolean>(false);
+
 const showGeneo = () => {
-  var geneoMatrix = usePoly().evalPolyStupid(
-    polyString.value,
-    testImgMatrix,
-    testImg
-  );
+  try {
+    var geneoMatrix = usePoly().evalPoly(
+      polyString.value,
+      testImgMatrix,
+      testImg
+    );
+  } catch (e) {
+    alertPopup.value = true;
+    return;
+  }
   if (geneoMatrix) {
     useMatrixCanvas().drawMatrix(geneoMatrix, myCanvasGeneo);
   }
