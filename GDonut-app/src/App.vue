@@ -1,5 +1,4 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" width="256" height="256" />
   <Calculator />
 </template>
 
