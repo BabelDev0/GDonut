@@ -73,7 +73,7 @@ const getParser = (
     }
 };
 
-const evalPolyStupid = (
+const evalPoly = (
     polyString: string,
     testImgMatrix: Matrix,
     testImg: HTMLImageElement,
@@ -91,5 +91,5 @@ const evalPolyStupid = (
 }
 
 export const usePoly = () => ({
-    evalPolyStupid: evalPolyStupid,
+    evalPoly: evalPoly,
 });
