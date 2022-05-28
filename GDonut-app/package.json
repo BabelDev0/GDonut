@@ -10,13 +10,18 @@
     "taudev": "tauri dev"
   },
   "dependencies": {
+    "@quasar/extras": "^1.14.0",
     "@tauri-apps/api": "^1.0.0-rc.5",
+    "mathjs": "^10.6.0",
     "ml-matrix": "^6.10.0",
+    "quasar": "^2.7.1",
     "vue": "^3.2.25"
   },
   "devDependencies": {
+    "@quasar/vite-plugin": "^1.0.10",
     "@tauri-apps/cli": "^1.0.0-rc.11",
     "@vitejs/plugin-vue": "^2.3.3",
+    "sass": "^1.32.0",
     "typescript": "^4.5.4",
     "vite": "^2.9.9",
     "vue-tsc": "^0.34.7"

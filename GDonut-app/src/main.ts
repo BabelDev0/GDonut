@@ -1,4 +1,9 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 
-createApp(App).mount('#app')
+import { Quasar } from 'quasar'
+import 'quasar/src/css/index.sass'
+// Import icon libraries
+import '@quasar/extras/material-icons/material-icons.css'
+
+createApp(App).use(Quasar).mount('#app')
