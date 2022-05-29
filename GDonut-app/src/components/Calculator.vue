@@ -1,6 +1,20 @@
 <template>
+  <div>
+    <q-file filled bottom-slots v-model="filePicker" label="Label" counter>
+      <template v-slot:prepend>
+        <q-icon name="cloud_upload" @click.stop />
+      </template>
+      <template v-slot:append>
+        <q-icon
+          name="close"
+          @click.stop="filePicker = null"
+          class="cursor-pointer"
+        />
+      </template>
+    </q-file>
+  </div>
   <div class="full-width row justify-center">
-    <q-input v-model="polyString" label="Polinomio" />
+    <q-input v-model="polyString" label="Polinomio" :loading="calc" />
     <div class="q-gutter-sm content-align-center">
       <q-btn round color="primary" icon="send" @click="showGeneo()" />
     </div>
@@ -57,11 +71,13 @@
 
 <script setup lang="ts">
 import { Matrix } from "ml-matrix";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useMatrixCanvas } from "../composables/useMatrixCanvas";
 import { usePoly } from "../composables/usePoly";
 
 const polyString = ref<string>("");
+const calc = ref(false);
+const filePicker = ref<File | null>();
 
 var myCanvasGeneo: HTMLCanvasElement;
 var myCanvas1: HTMLCanvasElement;
@@ -75,6 +91,7 @@ const yCanvas = ref<number>(0);
 var alertPopup = ref<boolean>(false);
 
 const showGeneo = () => {
+  calc.value = true;
   try {
     var geneoMatrix = usePoly().evalPoly(
       polyString.value,
@@ -88,6 +105,7 @@ const showGeneo = () => {
   if (geneoMatrix) {
     useMatrixCanvas().drawMatrix(geneoMatrix, myCanvasGeneo);
   }
+  calc.value = false;
 };
 
 const initTestImage = () => {
@@ -108,12 +126,27 @@ onMounted(() => {
   myCanvas1 = <HTMLCanvasElement>document.getElementById("myCanvas1");
   myCanvasGeneo = <HTMLCanvasElement>document.getElementById("myCanvasGeneo");
 
-  testImg.src = "../../unibo.png";
+  testImg.src = "../../grey.png";
   testImg.onload = () => initTestImage();
 
   xCanvas.value = testImg.width;
   yCanvas.value = testImg.height;
 });
+
+watch(
+  filePicker,
+  (newVal) => {
+    if (newVal) {
+      var reader = new FileReader();
+      reader.onload = () => {
+        testImg.src = reader.result as string;
+        testImg.onload = () => initTestImage();
+      };
+      reader.readAsDataURL(newVal);
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style scoped></style>
