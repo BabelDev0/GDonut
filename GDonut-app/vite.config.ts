@@ -12,5 +12,8 @@ export default defineConfig({
     quasar({
       sassVariables: 'src/quasar-variables.sass'
     })
-  ]
+  ],
+  build: {
+    chunkSizeWarningLimit: 1600,
+  },
 })
