@@ -3,6 +3,145 @@ import { useMatrixCanvas } from "../composables/useMatrixCanvas";
 import { useTorus } from "../composables/useTorus";
 import { create, all, Parser } from "mathjs";
 
+const spaceMoviment = (
+    x: number | string,
+    y: number | string,
+    testImgMatrix: Matrix,
+    canvasSize: number,
+) => {
+    return useTorus().putImgInTorus(
+        +x,
+        +y,
+        testImgMatrix,
+        canvasSize,
+        canvasSize
+    ).to1DArray();
+};
+
+const rotation = (
+    degree: number,
+    testImg: HTMLImageElement,
+    canvasSize: number,
+) => {
+    var myCanvasRotate = document.createElement("canvas");
+    myCanvasRotate.width = canvasSize;
+    myCanvasRotate.height = canvasSize;
+
+    var ctxRotate = myCanvasRotate.getContext("2d");
+    if (ctxRotate) {
+        var ctxRotatePre = ctxRotate;
+
+        ctxRotate.clearRect(0, 0, myCanvasRotate.width, myCanvasRotate.height);
+        ctxRotate.translate(
+            Math.floor(canvasSize / 2),
+            Math.floor(canvasSize / 2)
+        );
+        ctxRotate.rotate((+degree * Math.PI) / 180);
+        ctxRotate.translate(
+            -Math.floor(canvasSize / 2),
+            -Math.floor(canvasSize / 2)
+        );
+        ctxRotate.drawImage(
+            testImg,
+            0,
+            0,
+            testImg.width,
+            testImg.height,
+            0,
+            0,
+            canvasSize,
+            canvasSize
+        );
+
+        var testImgDataRotate = ctxRotate.getImageData(
+            0,
+            0,
+            canvasSize,
+            canvasSize
+        );
+
+        var torus_2 = useMatrixCanvas().arrayCanvasToMatrix(
+            testImgDataRotate.data,
+            canvasSize,
+            canvasSize
+        );
+
+        ctxRotate = ctxRotatePre;
+
+        return torus_2.to1DArray();
+    }
+    else {
+        console.log("ctxRotate is null");
+        return null;
+    }
+};
+
+const reflection = (
+    axis: string,
+    testImg: HTMLImageElement,
+    canvasSize: number,
+) => {
+    var myCanvasReflect = document.createElement("canvas");
+    myCanvasReflect.width = canvasSize;
+    myCanvasReflect.height = canvasSize;
+
+    var ctxReflect = myCanvasReflect.getContext("2d");
+    if (ctxReflect) {
+        var ctxReflectPre = ctxReflect;
+
+        ctxReflect.clearRect(0, 0, myCanvasReflect.width, myCanvasReflect.height);
+        ctxReflect.translate(
+            Math.floor(canvasSize / 2),
+            Math.floor(canvasSize / 2)
+        );
+        if (axis === "x") {
+            ctxReflect.scale(1, -1);
+        }
+        else if (axis === "y") {
+            ctxReflect.scale(-1, 1);
+        }
+        else {
+            ctxReflect.scale(-1, -1);
+        }
+        ctxReflect.translate(
+            -Math.floor(canvasSize / 2),
+            -Math.floor(canvasSize / 2)
+        );
+        ctxReflect.drawImage(
+            testImg,
+            0,
+            0,
+            testImg.width,
+            testImg.height,
+            0,
+            0,
+            canvasSize,
+            canvasSize
+        );
+
+        var testImgDataReflect = ctxReflect.getImageData(
+            0,
+            0,
+            canvasSize,
+            canvasSize
+        );
+
+        var torus_3 = useMatrixCanvas().arrayCanvasToMatrix(
+            testImgDataReflect.data,
+            canvasSize,
+            canvasSize
+        );
+
+        ctxReflect = ctxReflectPre;
+
+        return torus_3.to1DArray();
+    }
+    else {
+        console.log("ctxReflect is null");
+        return null;
+    }
+};
+
 const getParser = (
     polyString: string,
     testImgMatrix: Matrix,
@@ -17,67 +156,23 @@ const getParser = (
         parser.set('h', Math.floor(canvasSize / 2));
 
         parser.set('a_1', function (x: number | string, y: number | string) {
-            return useTorus().putImgInTorus(
-                +x,
-                +y,
-                testImgMatrix,
-                canvasSize,
-                canvasSize
-            ).to1DArray();
+            return spaceMoviment(x, y, testImgMatrix, canvasSize);
         });
 
         parser.set('a_2', function (degree: number) {
-            var myCanvasRotate = document.createElement("canvas");
-            myCanvasRotate.width = canvasSize;
-            myCanvasRotate.height = canvasSize;
+            return rotation(degree, testImg, canvasSize);
+        });
 
-            var ctxRotate = myCanvasRotate.getContext("2d");
-            if (ctxRotate) {
-                var ctxRotatePre = ctxRotate;
+        parser.set('a_3', () => {
+            return reflection("x", testImg, canvasSize);
+        });
 
-                ctxRotate.clearRect(0, 0, myCanvasRotate.width, myCanvasRotate.height);
-                ctxRotate.translate(
-                    Math.floor(canvasSize / 2),
-                    Math.floor(canvasSize / 2)
-                );
-                ctxRotate.rotate((+degree * Math.PI) / 180);
-                ctxRotate.translate(
-                    -Math.floor(canvasSize / 2),
-                    -Math.floor(canvasSize / 2)
-                );
-                ctxRotate.drawImage(
-                    testImg,
-                    0,
-                    0,
-                    testImg.width,
-                    testImg.height,
-                    0,
-                    0,
-                    canvasSize,
-                    canvasSize
-                );
+        parser.set('a_4', () => {
+            return reflection("y", testImg, canvasSize);
+        });
 
-                var testImgDataRotate = ctxRotate.getImageData(
-                    0,
-                    0,
-                    canvasSize,
-                    canvasSize
-                );
-
-                var torus_2 = useMatrixCanvas().arrayCanvasToMatrix(
-                    testImgDataRotate.data,
-                    canvasSize,
-                    canvasSize
-                );
-
-                ctxRotate = ctxRotatePre;
-
-                return torus_2.to1DArray();
-            }
-            else {
-                console.log("ctxRotate is null");
-                return null;
-            }
+        parser.set('a_5', () => {
+            return reflection("xy", testImg, canvasSize);
         });
 
         return parser;
