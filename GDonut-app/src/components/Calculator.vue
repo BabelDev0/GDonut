@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="hHh lpr lfr">
+  <q-layout view="hHh Lpr fFf">
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
@@ -63,7 +63,7 @@
             id="myCanvasGeneo"
             :width="canvasSize"
             :height="canvasSize"
-            style="border: 1px solid blue"
+            style="border: 1px solid #bb2e29"
           >
             Your browser does not support the HTML5 canvas tag.</canvas
           >
@@ -132,8 +132,8 @@ import { usePoly } from "../composables/usePoly";
 const polyString = ref<string>("");
 const filePicker = ref<File | null>();
 
-var myCanvasGeneo: HTMLCanvasElement;
-var myCanvas1: HTMLCanvasElement;
+var myCanvasGeneo: any;
+var myCanvas1: any;
 
 var testImg = new Image();
 var testImgMatrix: Matrix;
@@ -173,7 +173,7 @@ const initTestImage = () => {
   if (testImg) {
     var ctx = myCanvas1.getContext("2d");
     if (ctx) {
-      ctx.clearRect(0, 0, myCanvas1.width, myCanvas1.height);
+      ctx.clearRect(0, 0, canvasSize, canvasSize);
 
       // ctx.drawImage(testImg, 0, 0);
       ctx.drawImage(
@@ -209,15 +209,9 @@ const initTestImage = () => {
 };
 
 onMounted(() => {
-  myCanvas1 = <HTMLCanvasElement>document.getElementById("myCanvas1");
-  myCanvasGeneo = <HTMLCanvasElement>document.getElementById("myCanvasGeneo");
-
-  // testImg.src = "../../unibo.png";
-  // canvasSize.value =
-  //   testImg.height <= testImg.width ? testImg.height : testImg.width;
-
-  canvasSize.value = 500;
-  // testImg.onload = () => initTestImage();
+  myCanvas1 = document.getElementById("myCanvas1");
+  myCanvasGeneo = document.getElementById("myCanvasGeneo");
+  canvasSize.value = 300;
 });
 
 const download_image = () => {
