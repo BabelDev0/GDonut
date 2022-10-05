@@ -18,7 +18,7 @@
     "vue": "^3.2.25"
   },
   "devDependencies": {
-    "@quasar/vite-plugin": "^1.0.10",
+    "@quasar/vite-plugin": "^1.2.3",
     "@tauri-apps/cli": "^1.0.0-rc.11",
     "@vitejs/plugin-vue": "^2.3.3",
     "sass": "^1.32.0",
