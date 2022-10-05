@@ -6,7 +6,7 @@
 
         <q-toolbar-title>
           <q-avatar square size="40px">
-            <img src="../../public/logo.png" />
+            <img src="/logo.png" />
           </q-avatar>
           Calculator
         </q-toolbar-title>
@@ -52,6 +52,25 @@
             />
           </template>
         </q-file>
+      </div>
+      <div class="full-width">
+        <!-- <q-select
+          filled
+          v-model="model"
+          :options="options"
+          stack-label
+          label="Standard"
+          :display-value="`Company: ${model ? model : '*none*'}`"
+        >
+          <template v-slot:append>
+            <q-icon
+              v-if="model !== null"
+              class="cursor-pointer"
+              name="clear"
+              @click.stop.prevent="model = null"
+            />
+          </template>
+        </q-select> -->
       </div>
     </q-drawer>
 
@@ -173,9 +192,6 @@ const initTestImage = () => {
   if (testImg) {
     var ctx = myCanvas1.getContext("2d");
     if (ctx) {
-      ctx.clearRect(0, 0, canvasSize, canvasSize);
-
-      // ctx.drawImage(testImg, 0, 0);
       ctx.drawImage(
         testImg,
         0,
@@ -187,6 +203,7 @@ const initTestImage = () => {
         canvasSize.value,
         canvasSize.value
       );
+      ctx.clearRect(0, 0, canvasSize, canvasSize);
 
       var testImgData = ctx.getImageData(
         0,
