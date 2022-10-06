@@ -10,6 +10,13 @@
           </q-avatar>
           Calculator
         </q-toolbar-title>
+        <div class="q-my-xs" style="max-width: 300px">
+          <q-file outlined v-model="filePicker">
+            <template v-slot:prepend>
+              <q-icon name="cloud_upload" color="white" />
+            </template>
+          </q-file>
+        </div>
       </q-toolbar>
     </q-header>
 
@@ -17,14 +24,60 @@
       v-model="leftDrawerOpen"
       side="left"
       bordered
-      :width="400"
       :breakpoint="700"
       elevated
       behavior="desktop"
+      :width="drawerSize"
     >
       <!-- drawer content -->
+      <!-- group and permutant -->
+      <div class="full-width row justify-start q-py-xs">
+        <!-- select group -->
+        <q-fab
+          square
+          flat
+          v-model="group"
+          :label="groupSelected == '' ? 'Group' : groupSelected"
+          vertical-actions-align="left"
+          color="primary"
+          icon="keyboard_arrow_down"
+          direction="down"
+        >
+          <q-fab-action
+            v-for="item in groups"
+            square
+            color="primary"
+            @click="selectGroup(item)"
+            :label="item"
+            :key="item"
+          />
+        </q-fab>
+        <!-- select permutant -->
+        <q-fab
+          square
+          flat
+          v-model="permutant"
+          label="Permutant"
+          vertical-actions-align="left"
+          color="primary"
+          icon="add"
+          direction="down"
+          :disable="groupSelected == ''"
+        >
+          <q-fab-action
+            v-for="permutant in listOfPermutantsByGroup"
+            square
+            color="primary"
+            @click="selectPermutant(permutant)"
+            :label="permutant.description"
+            :key="permutant.description"
+          />
+        </q-fab>
+      </div>
+      <!-- poly -->
       <div class="full-width row justify-center">
         <q-input
+          square
           class="full-width"
           outlined
           v-model="polyString"
@@ -39,38 +92,31 @@
           </template>
         </q-input>
       </div>
-      <div class="full-width">
-        <q-file filled bottom-slots v-model="filePicker" label="Label" counter>
-          <template v-slot:prepend>
-            <q-icon name="cloud_upload" @click.stop />
-          </template>
-          <template v-slot:append>
-            <q-icon
-              name="close"
-              @click.stop="filePicker = null"
-              class="cursor-pointer"
-            />
-          </template>
-        </q-file>
-      </div>
-      <div class="full-width">
-        <!-- <q-select
-          filled
-          v-model="model"
-          :options="options"
-          stack-label
-          label="Standard"
-          :display-value="`Company: ${model ? model : '*none*'}`"
+      <!-- permutants selected -->
+      <div class="full-width row justify-center q-pt-md">
+        <q-input
+          v-for="permutant in listOfPermutantSelected"
+          square
+          class="full-width"
+          outlined
+          v-model="permutant.value"
+          :label="permutant.rules"
+          :hint="permutant.description"
+          :key="permutant.label"
         >
+          <template v-slot:prepend>
+            <q-chip color="primary" text-color="white" icon="calculate">
+              {{ permutant.label }}
+            </q-chip>
+          </template>
           <template v-slot:append>
             <q-icon
-              v-if="model !== null"
+              name="delete"
+              @click="removePermutant(permutant.label)"
               class="cursor-pointer"
-              name="clear"
-              @click.stop.prevent="model = null"
             />
           </template>
-        </q-select> -->
+        </q-input>
       </div>
     </q-drawer>
 
@@ -107,7 +153,7 @@
             id="myCanvas1"
             :width="canvasSize"
             :height="canvasSize"
-            style="border: 1px solid blue"
+            style="border: 1px solid #bb2e29"
           >
             Your browser does not support the HTML5 canvas tag.</canvas
           >
@@ -142,6 +188,7 @@
 </template>
 
 <script setup lang="ts">
+import { string } from "mathjs";
 import { Matrix } from "ml-matrix";
 import { debounce } from "quasar";
 import { onMounted, ref, watch } from "vue";
@@ -149,7 +196,7 @@ import { useMatrixCanvas } from "../composables/useMatrixCanvas";
 import { usePoly } from "../composables/usePoly";
 
 const polyString = ref<string>("");
-const filePicker = ref<File | null>();
+const filePicker = ref(null);
 
 var myCanvasGeneo: any;
 var myCanvas1: any;
@@ -158,9 +205,63 @@ var testImg = new Image();
 var testImgMatrix: Matrix;
 
 const canvasSize = ref(0);
+const drawerSize = ref(window.innerWidth * 0.33);
+
+const group = ref(false);
+const groups = ["Primo", "Secondo"];
+const groupSelected = ref("");
+
+const permutant = ref(false);
+const listOfPermutants = [
+  {
+    description: "spostamento lineare su x e y",
+    rules: "inserire spostamento nel formato: x,y",
+  },
+  {
+    description: "rotazione intorno al centro dell'immagine",
+    rules: "inserire i gradi: deg",
+  },
+  {
+    description: "simmetria rispetto ad un asse",
+    rules: "inserire l'asse: x o y",
+  },
+];
+const listOfPermutantsByGroup = ref<Permutant[]>([]);
+const listOfPermutantSelected = ref<Permutant[]>([]);
 
 var alertPopup = ref(false);
 const leftDrawerOpen = ref(true);
+
+const selectGroup = (group: string) => {
+  groupSelected.value = group;
+  listOfPermutantsByGroup.value = [];
+  listOfPermutantSelected.value = [];
+  if (group == "Primo") {
+    listOfPermutantsByGroup.value.push(listOfPermutants[0]);
+    listOfPermutantsByGroup.value.push(listOfPermutants[1]);
+  } else if (group == "Secondo") {
+    listOfPermutantsByGroup.value.push(listOfPermutants[0]);
+    listOfPermutantsByGroup.value.push(listOfPermutants[1]);
+    listOfPermutantsByGroup.value.push(listOfPermutants[2]);
+  }
+};
+
+const selectPermutant = (permutant: Permutant) => {
+  listOfPermutantSelected.value.push({
+    label: "a_" + (listOfPermutantSelected.value?.length + 1),
+    description: permutant.description,
+    rules: permutant.rules,
+  });
+};
+
+const removePermutant = (label: string | undefined) => {
+  listOfPermutantSelected.value = listOfPermutantSelected.value.filter(
+    (permutant) => permutant.label != label
+  );
+  listOfPermutantSelected.value.forEach((permutant, index) => {
+    permutant.label = "a_" + (index + 1);
+  });
+};
 
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value;
@@ -192,6 +293,7 @@ const initTestImage = () => {
   if (testImg) {
     var ctx = myCanvas1.getContext("2d");
     if (ctx) {
+      ctx.clearRect(0, 0, canvasSize, canvasSize);
       ctx.drawImage(
         testImg,
         0,
@@ -203,7 +305,6 @@ const initTestImage = () => {
         canvasSize.value,
         canvasSize.value
       );
-      ctx.clearRect(0, 0, canvasSize, canvasSize);
 
       var testImgData = ctx.getImageData(
         0,
@@ -228,7 +329,10 @@ const initTestImage = () => {
 onMounted(() => {
   myCanvas1 = document.getElementById("myCanvas1");
   myCanvasGeneo = document.getElementById("myCanvasGeneo");
-  canvasSize.value = 300;
+  canvasSize.value =
+    Math.floor(window.innerWidth * 0.25) < 200
+      ? 200
+      : Math.floor(window.innerWidth * 0.25);
 });
 
 const download_image = () => {
@@ -242,6 +346,21 @@ const download_image = () => {
 };
 
 watch(polyString, () => showGeneo());
+
+// change canvasSize on window resize
+window.addEventListener("resize", () => {
+  canvasSize.value =
+    Math.floor(window.innerWidth * 0.25) < 200
+      ? 200
+      : Math.floor(window.innerWidth * 0.25);
+  drawerSize.value =
+    window.innerWidth * 0.33 < 200 ? 200 : window.innerWidth * 0.33;
+
+  setTimeout(() => {
+    initTestImage();
+    showGeneo();
+  }, 500);
+});
 
 watch(
   filePicker,
