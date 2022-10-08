@@ -1,5 +1,6 @@
 interface Permutant {
-  label?: string;
+  label: string;
+  internalName: string;
   description: string;
   rules: string;
   value?: string;
