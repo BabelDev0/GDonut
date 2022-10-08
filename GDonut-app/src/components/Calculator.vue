@@ -188,9 +188,7 @@
 </template>
 
 <script setup lang="ts">
-import { string } from "mathjs";
 import { Matrix } from "ml-matrix";
-import { debounce } from "quasar";
 import { onMounted, ref, watch } from "vue";
 import { useMatrixCanvas } from "../composables/useMatrixCanvas";
 import { usePoly } from "../composables/usePoly";
@@ -205,7 +203,8 @@ var testImg = new Image();
 var testImgMatrix: Matrix;
 
 const canvasSize = ref(0);
-const drawerSize = ref(window.innerWidth * 0.33);
+const drawerSize = ref(450);
+// window.innerWidth * 0.33 < 300 ? 300 : window.innerWidth * 0.33
 
 const group = ref(false);
 const groups = ["Primo", "Secondo"];
@@ -214,14 +213,20 @@ const groupSelected = ref("");
 const permutant = ref(false);
 const listOfPermutants = [
   {
+    label: "",
+    internalName: "lin",
     description: "spostamento lineare su x e y",
     rules: "inserire spostamento nel formato: x,y",
   },
   {
+    label: "",
+    internalName: "rot",
     description: "rotazione intorno al centro dell'immagine",
     rules: "inserire i gradi: deg",
   },
   {
+    label: "",
+    internalName: "ref",
     description: "simmetria rispetto ad un asse",
     rules: "inserire l'asse: x o y",
   },
@@ -251,6 +256,7 @@ const selectPermutant = (permutant: Permutant) => {
     label: "a_" + (listOfPermutantSelected.value?.length + 1),
     description: permutant.description,
     rules: permutant.rules,
+    internalName: permutant.internalName,
   });
 };
 
@@ -274,7 +280,8 @@ const showGeneo = () => {
         polyString.value,
         testImgMatrix,
         testImg,
-        canvasSize.value
+        canvasSize.value,
+        listOfPermutantSelected.value
       );
     } catch (e) {
       // alertPopup.value = true;
@@ -282,6 +289,7 @@ const showGeneo = () => {
     }
 
     if (geneoMatrix!) {
+      console.log(geneoMatrix);
       useMatrixCanvas().drawMatrix(geneoMatrix, myCanvasGeneo);
     }
   } else {
@@ -329,10 +337,10 @@ const initTestImage = () => {
 onMounted(() => {
   myCanvas1 = document.getElementById("myCanvas1");
   myCanvasGeneo = document.getElementById("myCanvasGeneo");
-  canvasSize.value =
-    Math.floor(window.innerWidth * 0.25) < 200
-      ? 200
-      : Math.floor(window.innerWidth * 0.25);
+  canvasSize.value = 300;
+  // Math.floor(window.innerWidth * 0.25) < 200
+  //   ? 200
+  //   : Math.floor(window.innerWidth * 0.25);
 });
 
 const download_image = () => {
@@ -345,22 +353,22 @@ const download_image = () => {
   link.click();
 };
 
-watch(polyString, () => showGeneo());
+watch([polyString, listOfPermutantSelected], () => showGeneo(), { deep: true });
 
 // change canvasSize on window resize
-window.addEventListener("resize", () => {
-  canvasSize.value =
-    Math.floor(window.innerWidth * 0.25) < 200
-      ? 200
-      : Math.floor(window.innerWidth * 0.25);
-  drawerSize.value =
-    window.innerWidth * 0.33 < 200 ? 200 : window.innerWidth * 0.33;
+// window.addEventListener("resize", () => {
+//   canvasSize.value =
+//     Math.floor(window.innerWidth * 0.25) < 200
+//       ? 200
+//       : Math.floor(window.innerWidth * 0.25);
+//   drawerSize.value =
+//     window.innerWidth * 0.33 < 300 ? 300 : window.innerWidth * 0.33;
 
-  setTimeout(() => {
-    initTestImage();
-    showGeneo();
-  }, 500);
-});
+//   setTimeout(() => {
+//     initTestImage();
+//     showGeneo();
+//   }, 500);
+// });
 
 watch(
   filePicker,
