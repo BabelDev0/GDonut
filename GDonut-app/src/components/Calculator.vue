@@ -326,6 +326,8 @@ const initTestImage = () => {
         canvasSize.value,
         canvasSize.value
       );
+
+      showGeneo();
     } else {
       console.log("ctx dosen't exist");
     }
