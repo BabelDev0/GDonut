@@ -1,17 +1,17 @@
 import { Matrix } from "ml-matrix";
 import { useMatrixCanvas } from "../composables/useMatrixCanvas";
 import { useTorus } from "../composables/useTorus";
-import { create, all, Parser } from "mathjs";
+import { create, all, Parser, number, log } from "mathjs";
 
 const spaceMoviment = (
-    x: number | string,
-    y: number | string,
+    x: number,
+    y: number,
     testImgMatrix: Matrix,
     canvasSize: number,
 ) => {
     return useTorus().putImgInTorus(
-        +x,
-        +y,
+        x,
+        y,
         testImgMatrix,
         canvasSize,
         canvasSize
@@ -77,7 +77,7 @@ const rotation = (
 };
 
 const reflection = (
-    axis: string,
+    axis: any,
     testImg: HTMLImageElement,
     canvasSize: number,
 ) => {
@@ -142,37 +142,58 @@ const reflection = (
     }
 };
 
+const eleSymPoly = (rank: number, ...args: number[][]) => {
+    const n = args.reduce((max, xs) => Math.max(max, xs.length), 0);
+    const result = Array.from({ length: n });
+    return result.map((_, i) => args.map(xs => xs[i] || 0).reduce((sum, x) => sum + x, 0));
+}
+
 const getParser = (
     polyString: string,
     testImgMatrix: Matrix,
     testImg: HTMLImageElement,
     canvasSize: number,
+    permutantSelected: Permutant[]
 ): Parser | null => {
     if (polyString && polyString.length !== 0) {
         const config = {};
         const math = create(all, config);
         const parser = math.parser();
 
-        parser.set('h', Math.floor(canvasSize / 2));
+        permutantSelected.forEach((permutant) => {
+            switch (permutant.internalName) {
+                case "lin":
+                    var values: number[] = [];
+                    if (permutant.value) {
+                        values = permutant.value.split(",").map(Number);
+                    }
+                    parser.set(permutant.label,
+                        spaceMoviment(values[0], values[1], testImgMatrix, canvasSize));
+                    break;
+                case "rot":
+                    var value: number = 0;
+                    if (permutant.value) {
+                        value = +permutant.value;
+                    }
+                    parser.set(permutant.label,
+                        rotation(value, testImg, canvasSize)
+                    );
+                    break;
+                case "ref":
+                    if (permutant.value) {
+                        parser.set(permutant.label,
+                            reflection(permutant.value, testImg, canvasSize)
+                        );
+                    }
+                    break;
 
-        parser.set('a_1', function (x: number | string, y: number | string) {
-            return spaceMoviment(x, y, testImgMatrix, canvasSize);
+                default:
+                    break;
+            }
         });
 
-        parser.set('a_2', function (degree: number) {
-            return rotation(degree, testImg, canvasSize);
-        });
-
-        parser.set('a_3', () => {
-            return reflection("x", testImg, canvasSize);
-        });
-
-        parser.set('a_4', () => {
-            return reflection("y", testImg, canvasSize);
-        });
-
-        parser.set('a_5', () => {
-            return reflection("xy", testImg, canvasSize);
+        parser.set('s', function (rank: number, ...args: number[][]) {
+            return eleSymPoly(rank, ...args);
         });
 
         return parser;
@@ -182,14 +203,16 @@ const getParser = (
     }
 };
 
+
+
 const evalPoly = (
     polyString: string,
     testImgMatrix: Matrix,
     testImg: HTMLImageElement,
     canvasSize: number,
+    permutantSelected: Permutant[]
 ): Matrix | null => {
-
-    const parser = getParser(polyString, testImgMatrix, testImg, canvasSize);
+    const parser = getParser(polyString, testImgMatrix, testImg, canvasSize, permutantSelected);
     if (parser) {
         var arrayValuated = parser.evaluate(polyString);
         parser.clear();
