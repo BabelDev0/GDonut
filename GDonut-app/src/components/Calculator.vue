@@ -275,22 +275,26 @@ const toggleLeftDrawer = () => {
 
 const showGeneo = () => {
   if (testImg) {
-    try {
-      var geneoMatrix = usePoly().evalPoly(
-        polyString.value,
-        testImgMatrix,
-        testImg,
-        canvasSize.value,
-        listOfPermutantSelected.value
-      );
-    } catch (e) {
-      // alertPopup.value = true;
-      return;
-    }
+    if (polyString.value != "") {
+      try {
+        var geneoMatrix = usePoly().evalPoly(
+          polyString.value,
+          testImgMatrix,
+          testImg,
+          canvasSize.value,
+          listOfPermutantSelected.value
+        );
+      } catch (e) {
+        // alertPopup.value = true;
+        return;
+      }
 
-    if (geneoMatrix!) {
-      console.log(geneoMatrix);
-      useMatrixCanvas().drawMatrix(geneoMatrix, myCanvasGeneo);
+      if (geneoMatrix!) {
+        useMatrixCanvas().drawMatrix(geneoMatrix, myCanvasGeneo);
+      }
+    } else {
+      var ctx = myCanvasGeneo.getContext("2d");
+      ctx.clearRect(0, 0, myCanvasGeneo.width, myCanvasGeneo.height);
     }
   } else {
     console.log("image dosen't exist");
