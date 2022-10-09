@@ -196,6 +196,22 @@ const getParser = (
             return eleSymPoly(rank, ...args);
         });
 
+        // parser.set('m', function (...args: number[][]) {
+        //     let matrices: Matrix[];
+        //     matrices = args.map((arg: any) => {
+        //         return useMatrixCanvas().arrayCanvasToMatrix(arg, canvasSize, canvasSize);
+        //     });
+        //     return useMatrixCanvas().multiplyMatrix(matrices);
+        // });
+
+        parser.set('m', function (...args: number[][]) {
+            let matrices: Matrix[];
+            matrices = args.map((arg: any) => {
+                return useMatrixCanvas().arrayCanvasToMatrix(arg, canvasSize, canvasSize);
+            });
+            return useMatrixCanvas().multiplyMatrix(matrices).to1DArray();
+        });
+
         return parser;
     }
     else {
