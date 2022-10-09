@@ -204,7 +204,6 @@ var testImgMatrix: Matrix;
 
 const canvasSize = ref(0);
 const drawerSize = ref(450);
-// window.innerWidth * 0.33 < 300 ? 300 : window.innerWidth * 0.33
 
 const group = ref(false);
 const groups = ["Primo", "Secondo"];
@@ -236,6 +235,10 @@ const listOfPermutantSelected = ref<Permutant[]>([]);
 
 var alertPopup = ref(false);
 const leftDrawerOpen = ref(true);
+
+const toggleLeftDrawer = () => {
+  leftDrawerOpen.value = !leftDrawerOpen.value;
+};
 
 const selectGroup = (group: string) => {
   groupSelected.value = group;
@@ -269,8 +272,14 @@ const removePermutant = (label: string | undefined) => {
   });
 };
 
-const toggleLeftDrawer = () => {
-  leftDrawerOpen.value = !leftDrawerOpen.value;
+const download_image = () => {
+  var image = myCanvasGeneo
+    .toDataURL("image/png")
+    .replace("image/png", "image/octet-stream");
+  var link = document.createElement("a");
+  link.download = "geneo.png";
+  link.href = image;
+  link.click();
 };
 
 const showGeneo = () => {
@@ -349,33 +358,6 @@ onMounted(() => {
   //   : Math.floor(window.innerWidth * 0.25);
 });
 
-const download_image = () => {
-  var image = myCanvasGeneo
-    .toDataURL("image/png")
-    .replace("image/png", "image/octet-stream");
-  var link = document.createElement("a");
-  link.download = "geneo.png";
-  link.href = image;
-  link.click();
-};
-
-watch([polyString, listOfPermutantSelected], () => showGeneo(), { deep: true });
-
-// change canvasSize on window resize
-// window.addEventListener("resize", () => {
-//   canvasSize.value =
-//     Math.floor(window.innerWidth * 0.25) < 200
-//       ? 200
-//       : Math.floor(window.innerWidth * 0.25);
-//   drawerSize.value =
-//     window.innerWidth * 0.33 < 300 ? 300 : window.innerWidth * 0.33;
-
-//   setTimeout(() => {
-//     initTestImage();
-//     showGeneo();
-//   }, 500);
-// });
-
 watch(
   filePicker,
   (newVal) => {
@@ -390,6 +372,8 @@ watch(
   },
   { immediate: true }
 );
+
+watch([polyString, listOfPermutantSelected], () => showGeneo(), { deep: true });
 </script>
 
 <style scoped></style>
