@@ -202,6 +202,9 @@ import { Matrix } from "ml-matrix";
 import { onMounted, ref, watch } from "vue";
 import { useMatrixCanvas } from "../composables/useMatrixCanvas";
 import { usePoly } from "../composables/usePoly";
+import { save } from "@tauri-apps/api/dialog";
+import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
+import { desktopDir } from "@tauri-apps/api/path";
 
 const polyString = ref<string>("");
 const filePicker = ref(null);
@@ -282,8 +285,26 @@ const removePermutant = (label: string | undefined) => {
   });
 };
 
-const download_image = () => {
-  //ask to save canvas as image
+const download_image = async () => {
+  const filePath = await save({
+    defaultPath: BaseDirectory.Desktop + "/geneo.png",
+    filters: [
+      {
+        name: "Image",
+        extensions: ["jpg", "png"],
+      },
+    ],
+  });
+  var ctx = myCanvasGeneo.getContext("2d", { willReadFrequently: true });
+  var geneoImageData = ctx.getImageData(
+    0,
+    0,
+    canvasSize.value,
+    canvasSize.value
+  );
+  console.log(filePath, geneoImageData);
+  const res = await writeBinaryFile(filePath, geneoImageData);
+  console.log(res);
 };
 
 const showGeneo = () => {
