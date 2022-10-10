@@ -148,6 +148,42 @@ const eleSymPoly = (rank: number, ...args: number[][]) => {
     return result.map((_, i) => args.map(xs => xs[i] || 0).reduce((sum, x) => sum + x, 0));
 }
 
+const prova = (set: any, rank: number): any => {
+    var i, j, s = "", head, tailcombs;
+
+    if (rank > set.length || rank <= 0) {
+        return "";
+    }
+
+    if (rank == set.length) {
+        for (i = 0; i < set.length; i++) {
+            s += set[i];
+        }
+        return s;
+    }
+
+    if (rank == 1) {
+        s = "";
+        for (i = 0; i < set.length; i++) {
+            s += set[i];
+            if (i < set.length - 1) {
+                s += "+";
+            }
+        }
+        return s;
+    }
+
+    var combs = [];
+    for (i = 0; i < set.length - rank + 1; i++) {
+        head = set.slice(i, i + 1);
+        tailcombs = prova(set.slice(i + 1), rank - 1);
+        for (j = 0; j < tailcombs.length; j++) {
+            combs.push(head.concat(tailcombs[j]));
+        }
+    }
+    return combs;
+}
+
 const getParser = (
     polyString: string,
     testImgMatrix: Matrix,
@@ -196,14 +232,6 @@ const getParser = (
             return eleSymPoly(rank, ...args);
         });
 
-        // parser.set('m', function (...args: number[][]) {
-        //     let matrices: Matrix[];
-        //     matrices = args.map((arg: any) => {
-        //         return useMatrixCanvas().arrayCanvasToMatrix(arg, canvasSize, canvasSize);
-        //     });
-        //     return useMatrixCanvas().multiplyMatrix(matrices);
-        // });
-
         parser.set('m', function (...args: number[][]) {
             let matrices: Matrix[];
             matrices = args.map((arg: any) => {
@@ -212,14 +240,17 @@ const getParser = (
             return useMatrixCanvas().multiplyMatrix(matrices).to1DArray();
         });
 
+        parser.set('p', function (rank: number) {
+            var combs = prova(["a_1", "a_2", "a_3", "a_4"/*, "a_5"*/], rank);
+            console.log(combs);
+        });
+
         return parser;
     }
     else {
         return null;
     }
 };
-
-
 
 const evalPoly = (
     polyString: string,
