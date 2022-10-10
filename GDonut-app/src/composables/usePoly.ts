@@ -1,7 +1,7 @@
 import { Matrix } from "ml-matrix";
 import { useMatrixCanvas } from "../composables/useMatrixCanvas";
 import { useTorus } from "../composables/useTorus";
-import { create, all, Parser, number, log } from "mathjs";
+import { create, all, Parser, factorial } from "mathjs";
 
 const spaceMoviment = (
     x: number,
@@ -142,46 +142,67 @@ const reflection = (
     }
 };
 
-const eleSymPoly = (rank: number, ...args: number[][]) => {
-    const n = args.reduce((max, xs) => Math.max(max, xs.length), 0);
-    const result = Array.from({ length: n });
-    return result.map((_, i) => args.map(xs => xs[i] || 0).reduce((sum, x) => sum + x, 0));
+const binom = (n: number, k: number) => {
+    if (k < 0 || k > n) {
+        return 0;
+    }
+    else {
+        return factorial(n) / (factorial(k) * factorial(n - k));
+    }
 }
 
-const prova = (set: any, rank: number): any => {
-    var i, j, s = "", head, tailcombs;
+//Algorithm 515 (Buckle's Algorithm)
+const A515 = (n: number, p: number, l: number) => {
+    var c = new Array(p);
+    var x = 1;
+    var r = binom(n - x, p - 1);
+    var k = r;
 
-    if (rank > set.length || rank <= 0) {
-        return "";
+    while (k <= l) {
+        x += 1;
+        r = binom(n - x, p - 1);
+        k += r;
     }
-
-    if (rank == set.length) {
-        for (i = 0; i < set.length; i++) {
-            s += set[i];
+    k -= r;
+    c[0] = x - 1;
+    for (var i = 2; i < p; i++) {
+        x += 1;
+        r = binom(n - x, p - i);
+        k += r;
+        while (k <= l) {
+            x += 1;
+            r = binom(n - x, p - i);
+            k += r;
         }
-        return s;
+        k -= r;
+        c[i - 1] = x - 1;
     }
+    if (p > 1) {
+        c[p - 1] = x + l - k;
+    }
+    return c;
+}
 
-    if (rank == 1) {
-        s = "";
-        for (i = 0; i < set.length; i++) {
-            s += set[i];
-            if (i < set.length - 1) {
-                s += "+";
-            }
-        }
-        return s;
-    }
+const eleSymPoly = (rank: number, canvasSize: number, ...args: number[][]) => {
+    var size = args.length;
+    var nCr = binom(size, rank);
 
-    var combs = [];
-    for (i = 0; i < set.length - rank + 1; i++) {
-        head = set.slice(i, i + 1);
-        tailcombs = prova(set.slice(i + 1), rank - 1);
-        for (j = 0; j < tailcombs.length; j++) {
-            combs.push(head.concat(tailcombs[j]));
+    var result: Matrix = Matrix.zeros(canvasSize, canvasSize * 4);
+
+    let matrices: Matrix[];
+    matrices = args.map((arg: any) => {
+        return useMatrixCanvas().arrayCanvasToMatrix(arg, canvasSize, canvasSize);
+    });
+
+    for (var i = 0; i < nCr; i++) {
+        var step: Matrix = Matrix.ones(canvasSize, canvasSize * 4);
+        var combinations = A515(size, rank, i);
+        for (var j = 0; j < combinations.length; j++) {
+            step = Matrix.multiply(step, matrices[combinations[j]]);
         }
+        result = Matrix.add(result, step);
     }
-    return combs;
+    return result.to1DArray();
 }
 
 const getParser = (
@@ -228,10 +249,6 @@ const getParser = (
             }
         });
 
-        parser.set('s', function (rank: number, ...args: number[][]) {
-            return eleSymPoly(rank, ...args);
-        });
-
         parser.set('m', function (...args: number[][]) {
             let matrices: Matrix[];
             matrices = args.map((arg: any) => {
@@ -240,9 +257,8 @@ const getParser = (
             return useMatrixCanvas().multiplyMatrix(matrices).to1DArray();
         });
 
-        parser.set('p', function (rank: number) {
-            var combs = prova(["a_1", "a_2", "a_3", "a_4"/*, "a_5"*/], rank);
-            console.log(combs);
+        parser.set('s', function (rank: number, ...args: number[][]) {
+            return eleSymPoly(rank, canvasSize, ...args);
         });
 
         return parser;
