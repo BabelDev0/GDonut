@@ -292,6 +292,7 @@ const showGeneo = () => {
           canvasSize.value,
           listOfPermutantSelected.value
         );
+        console.log(geneoMatrix);
       } catch (e) {
         // alertPopup.value = true;
         return;
@@ -301,7 +302,7 @@ const showGeneo = () => {
         useMatrixCanvas().drawMatrix(geneoMatrix, myCanvasGeneo);
       }
     } else {
-      var ctx = myCanvasGeneo.getContext("2d");
+      var ctx = myCanvasGeneo.getContext("2d", { willReadFrequently: true });
       ctx.clearRect(0, 0, myCanvasGeneo.width, myCanvasGeneo.height);
     }
   } else {
@@ -311,7 +312,8 @@ const showGeneo = () => {
 
 const initTestImage = () => {
   if (testImg) {
-    var ctx = myCanvas1.getContext("2d");
+    //willReadFrequently
+    var ctx = myCanvas1.getContext("2d", { willReadFrequently: true });
     if (ctx) {
       ctx.clearRect(0, 0, canvasSize, canvasSize);
       ctx.drawImage(
