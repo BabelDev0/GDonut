@@ -12,7 +12,12 @@
           Calculator
         </q-toolbar-title>
         <div class="q-my-xs" style="max-width: 300px">
-          <q-file outlined v-model="filePicker">
+          <q-file
+            outlined
+            v-model="filePicker"
+            label="select image"
+            label-color="white"
+          >
             <template v-slot:prepend>
               <q-icon name="cloud_upload" color="white" />
             </template>
