@@ -315,7 +315,7 @@ const initTestImage = () => {
     //willReadFrequently
     var ctx = myCanvas1.getContext("2d", { willReadFrequently: true });
     if (ctx) {
-      ctx.clearRect(0, 0, canvasSize, canvasSize);
+      ctx.clearRect(0, 0, canvasSize.value, canvasSize.value);
       ctx.drawImage(
         testImg,
         0,
