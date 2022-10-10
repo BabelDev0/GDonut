@@ -1,5 +1,6 @@
 <template>
   <q-layout view="hHh Lpr fFf">
+    <!-- HEADER -->
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
@@ -20,6 +21,7 @@
       </q-toolbar>
     </q-header>
 
+    <!-- DRAWER -->
     <q-drawer
       v-model="leftDrawerOpen"
       side="left"
@@ -120,7 +122,9 @@
       </div>
     </q-drawer>
 
+    <!-- MAIN -->
     <q-page-container>
+      <!-- GENEO CANVAS -->
       <div class="full-width row justify-center">
         <div class="column justify-start">
           <canvas
@@ -146,6 +150,7 @@
           </div>
         </div>
       </div>
+      <!-- TEST CANVAS -->
       <div class="full-width row justify-center">
         <div class="column justify-start">
           <canvas
@@ -221,13 +226,13 @@ const listOfPermutants = [
     label: "",
     internalName: "rot",
     description: "rotazione intorno al centro dell'immagine",
-    rules: "inserire i gradi: deg",
+    rules: "inserire i gradi: deg multipli di 90",
   },
   {
     label: "",
     internalName: "ref",
-    description: "simmetria rispetto ad un asse",
-    rules: "inserire l'asse: x o y",
+    description: "simmetria rispetto ad un asse o l'origine",
+    rules: "inserire l'asse: x o y o xy",
   },
 ];
 const listOfPermutantsByGroup = ref<Permutant[]>([]);
@@ -273,13 +278,7 @@ const removePermutant = (label: string | undefined) => {
 };
 
 const download_image = () => {
-  var image = myCanvasGeneo
-    .toDataURL("image/png")
-    .replace("image/png", "image/octet-stream");
-  var link = document.createElement("a");
-  link.download = "geneo.png";
-  link.href = image;
-  link.click();
+  //ask to save canvas as image
 };
 
 const showGeneo = () => {
