@@ -11,6 +11,7 @@
           </q-avatar>
           Calculator
         </q-toolbar-title>
+        <!-- FILE PICKER -->
         <div class="q-my-xs" style="max-width: 300px">
           <q-file
             outlined
@@ -36,8 +37,8 @@
       behavior="desktop"
       :width="drawerSize"
     >
-      <!-- drawer content -->
-      <!-- group and permutant -->
+      <!-- DRAWER CONTENT -->
+      <!-- GROUP AND PERMUTANT -->
       <div class="full-width row justify-start q-py-xs">
         <!-- select group -->
         <q-fab
@@ -81,14 +82,14 @@
           />
         </q-fab>
       </div>
-      <!-- poly -->
+      <!-- POLY -->
       <div class="full-width row justify-center">
         <q-input
           square
           class="full-width"
           outlined
           v-model="polynomial"
-          label="Polinomio"
+          label="Polynomial"
         >
           <template v-slot:append>
             <q-icon
@@ -99,7 +100,7 @@
           </template>
         </q-input>
       </div>
-      <!-- permutants selected -->
+      <!-- PERMUTANTS SELECTED -->
       <div class="full-width row justify-center q-pt-md">
         <q-input
           v-for="permutant in listOfPermutantSelected"
@@ -134,7 +135,7 @@
         <div class="column justify-start">
           <canvas
             class="q-mb-xs"
-            id="myCanvasGeneo"
+            id="canvasGeneo"
             :width="canvasSize"
             :height="canvasSize"
             style="border: 1px solid #bb2e29"
@@ -160,7 +161,7 @@
         <div class="column justify-start">
           <canvas
             class="q-mt-md q-mb-xs"
-            id="myCanvas1"
+            id="canvasOriginal"
             :width="canvasSize"
             :height="canvasSize"
             style="border: 1px solid #bb2e29"
@@ -172,27 +173,6 @@
           </div>
         </div>
       </div>
-      <!-- 
-      <q-dialog v-model="alertPopup">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6">Errore nel polinomio inserito</div>
-          </q-card-section>
-
-          <q-card-section class="q-pt-none">
-            the polynomial in input contains wrong or compound characters in an
-            erroneous formulation:
-            <br />
-            permutants allowed are : a_1(x,y) | a_2(degree)
-            <br />
-            shortcut: halfX = (image width)/2 | halfY = (image height)/2
-          </q-card-section>
-
-          <q-card-actions>
-            <q-btn flat label="OK" color="primary" v-close-popup />
-          </q-card-actions>
-        </q-card>
-      </q-dialog> -->
     </q-page-container>
   </q-layout>
 </template>
@@ -206,48 +186,43 @@ import { save } from "@tauri-apps/api/dialog";
 import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
 import { desktopDir } from "@tauri-apps/api/path";
 
-const polynomial = ref<string>("");
-const filePicker = ref(null);
-
-var myCanvasGeneo: any;
-var myCanvas1: any;
-
+var canvasGeneo: any;
+var canvasOriginal: any;
 var testImg = new Image();
 var testImgMatrix: Matrix;
-
 const canvasSize = ref(0);
 const drawerSize = ref(450);
+const filePicker = ref(null);
+const leftDrawerOpen = ref(true);
+const polynomial = ref<string>("");
 
 const group = ref(false);
-const groups = ["Primo", "Secondo"];
-const groupSelected = ref("");
-
 const permutant = ref(false);
+const groupSelected = ref("");
+const groups = ["First", "Second"];
+const listOfPermutantsByGroup = ref<Permutant[]>([]);
+const listOfPermutantSelected = ref<Permutant[]>([]);
+
 const listOfPermutants = [
   {
     label: "",
     internalName: "lin",
-    description: "spostamento lineare su x e y",
-    rules: "inserire spostamento nel formato: x,y",
+    description: "linear displacement",
+    rules: "enter displacement in the format: x,y",
   },
   {
     label: "",
     internalName: "rot",
-    description: "rotazione intorno al centro dell'immagine",
-    rules: "inserire i gradi: deg multipli di 90",
+    description: "rotation around the center of the image",
+    rules: "enter degrees: deg multiples of 90",
   },
   {
     label: "",
     internalName: "ref",
-    description: "simmetria rispetto ad un asse o l'origine",
-    rules: "inserire l'asse: x o y o xy",
+    description: "symmetry respect to axis or the origin",
+    rules: "enter the axis: x or y or xy",
   },
 ];
-const listOfPermutantsByGroup = ref<Permutant[]>([]);
-const listOfPermutantSelected = ref<Permutant[]>([]);
-
-var alertPopup = ref(false);
-const leftDrawerOpen = ref(true);
 
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value;
@@ -257,10 +232,10 @@ const selectGroup = (group: string) => {
   groupSelected.value = group;
   listOfPermutantsByGroup.value = [];
   listOfPermutantSelected.value = [];
-  if (group == "Primo") {
+  if (group == "First") {
     listOfPermutantsByGroup.value.push(listOfPermutants[0]);
     listOfPermutantsByGroup.value.push(listOfPermutants[1]);
-  } else if (group == "Secondo") {
+  } else if (group == "Second") {
     listOfPermutantsByGroup.value.push(listOfPermutants[0]);
     listOfPermutantsByGroup.value.push(listOfPermutants[1]);
     listOfPermutantsByGroup.value.push(listOfPermutants[2]);
@@ -295,7 +270,7 @@ const download_image = async () => {
       },
     ],
   });
-  var ctx = myCanvasGeneo.getContext("2d", { willReadFrequently: true });
+  var ctx = canvasGeneo.getContext("2d", { willReadFrequently: true });
   var geneoImageData = ctx.getImageData(
     0,
     0,
@@ -320,16 +295,15 @@ const showGeneo = () => {
         var geneoMatrix = polynomialUtils.evaluate(polynomial.value);
         console.log(geneoMatrix);
       } catch (e) {
-        // alertPopup.value = true;
         return;
       }
 
       if (geneoMatrix!) {
-        CanvasUtils.drawMatrix(geneoMatrix, myCanvasGeneo);
+        CanvasUtils.drawMatrix(geneoMatrix, canvasGeneo);
       }
     } else {
-      var ctx = myCanvasGeneo.getContext("2d", { willReadFrequently: true });
-      ctx.clearRect(0, 0, myCanvasGeneo.width, myCanvasGeneo.height);
+      var ctx = canvasGeneo.getContext("2d", { willReadFrequently: true });
+      ctx.clearRect(0, 0, canvasGeneo.width, canvasGeneo.height);
     }
   } else {
     console.log("image dosen't exist");
@@ -338,7 +312,7 @@ const showGeneo = () => {
 
 const initTestImage = () => {
   if (testImg) {
-    var ctx = myCanvas1.getContext("2d", { willReadFrequently: true });
+    var ctx = canvasOriginal.getContext("2d", { willReadFrequently: true });
     if (ctx) {
       ctx.clearRect(0, 0, canvasSize.value, canvasSize.value);
       ctx.drawImage(
@@ -376,12 +350,9 @@ const initTestImage = () => {
 };
 
 onMounted(() => {
-  myCanvas1 = document.getElementById("myCanvas1");
-  myCanvasGeneo = document.getElementById("myCanvasGeneo");
+  canvasOriginal = document.getElementById("canvasOriginal");
+  canvasGeneo = document.getElementById("canvasGeneo");
   canvasSize.value = 300;
-  // Math.floor(window.innerWidth * 0.25) < 200
-  //   ? 200
-  //   : Math.floor(window.innerWidth * 0.25);
 });
 
 watch(
