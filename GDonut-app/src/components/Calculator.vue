@@ -111,6 +111,7 @@
           :label="permutant.rules"
           :hint="permutant.description"
           :key="permutant.label"
+          :readonly="permutant.internalName == 'ide'"
         >
           <template v-slot:prepend>
             <q-chip color="primary" text-color="white" icon="calculate">
@@ -206,6 +207,12 @@ const listOfPermutantSelected = ref<Permutant[]>([]);
 const listOfPermutants = [
   {
     label: "",
+    internalName: "ide",
+    description: "identity",
+    rules: "identity no needed arguments",
+  },
+  {
+    label: "",
     internalName: "lin",
     description: "linear displacement",
     rules: "enter displacement in the format: x,y",
@@ -235,10 +242,11 @@ const selectGroup = (group: string) => {
   if (group == "First") {
     listOfPermutantsByGroup.value.push(listOfPermutants[0]);
     listOfPermutantsByGroup.value.push(listOfPermutants[1]);
+    listOfPermutantsByGroup.value.push(listOfPermutants[2]);
   } else if (group == "Second") {
-    listOfPermutantsByGroup.value.push(listOfPermutants[0]);
     listOfPermutantsByGroup.value.push(listOfPermutants[1]);
     listOfPermutantsByGroup.value.push(listOfPermutants[2]);
+    listOfPermutantsByGroup.value.push(listOfPermutants[3]);
   }
 };
 

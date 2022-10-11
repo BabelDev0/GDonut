@@ -22,6 +22,16 @@ export class PolynomialUtils {
     }
 
     /**
+     * Returns the identity function
+     * 
+     * @returns array containing identity matrix
+     */
+    identity(
+    ) {
+        return this.image.to1DArray();
+    };
+
+    /**
      * Returns an array with data of the image moved to the position passed by parameter 
      * considering the image in a toroid
      * 
@@ -285,12 +295,9 @@ export class PolynomialUtils {
         return result.to1DArray();
     }
 
-    geneoConstant(size: number) {
-        var Mimg = 255;
-        var constant = size
-    }
+    //todo the geneo constant
 
-    newParsing(polynomial: string) {
+    parsingLatex(polynomial: string) {
         // \sigma_1(a_1,a_2)+\sigma_2(a_1,a_2)^2+\sigma_1(a_1,a_2)*\sigma_2(a_1,a_2)
         // s(1,a_1,a_2)+s(2,a_1,a_2)^2+s(1,a_1,a_2)*s(2,a_1,a_2)
         // s(1,a_1,a_2)+p(s(2,a_1,a_2),2)+s(1,a_1,a_2)s*(2,a_1,a_2)
@@ -325,7 +332,7 @@ export class PolynomialUtils {
             index = polynomial.indexOf("*");
         }
 
-        console.log(polynomial);
+        return polynomial;
     }
 
     /**
@@ -342,6 +349,10 @@ export class PolynomialUtils {
         // parsing permutant
         this.permutantSelected.forEach((permutant) => {
             switch (permutant.internalName) {
+                case "ide":
+                    parser.set(permutant.label,
+                        this.identity());
+                    break;
                 case "lin":
                     var values = [0];
                     if (permutant.value) {
@@ -402,16 +413,16 @@ export class PolynomialUtils {
      * @returns matrix containing the result of the evaluation of the polynomial
      */
     evaluate(polynomial: string) {
-        this.newParsing(polynomial);
-        // const parser = this.getParser();
-        // if (parser) {
-        //     var result = parser.evaluate(polynomial);
-        //     var matrixResult = CanvasUtils.canvasToMatrix(result, this.canvasSize, this.canvasSize);
-        //     parser.clear();
-        //     return matrixResult;
-        // }
-        // else {
-        //     return null;
-        // }
+        const parser = this.getParser();
+        if (parser) {
+            var polyInternal = this.parsingLatex(polynomial);
+            var result = parser.evaluate(polyInternal);
+            var matrixResult = CanvasUtils.canvasToMatrix(result, this.canvasSize, this.canvasSize);
+            parser.clear();
+            return matrixResult;
+        }
+        else {
+            return null;
+        }
     }
 }
