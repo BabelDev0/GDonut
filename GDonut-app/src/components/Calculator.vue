@@ -87,13 +87,13 @@
           square
           class="full-width"
           outlined
-          v-model="polyString"
+          v-model="polynomial"
           label="Polinomio"
         >
           <template v-slot:append>
             <q-icon
               name="close"
-              @click="polyString = ''"
+              @click="polynomial = ''"
               class="cursor-pointer"
             />
           </template>
@@ -201,12 +201,12 @@
 import { Matrix } from "ml-matrix";
 import { onMounted, ref, watch } from "vue";
 import { CanvasUtils } from "../utils/CanvasUtils";
-import { usePoly } from "../composables/usePoly";
+import { PolynomialUtils } from "../utils/PolynomialUtils";
 import { save } from "@tauri-apps/api/dialog";
 import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
 import { desktopDir } from "@tauri-apps/api/path";
 
-const polyString = ref<string>("");
+const polynomial = ref<string>("");
 const filePicker = ref(null);
 
 var myCanvasGeneo: any;
@@ -309,15 +309,15 @@ const download_image = async () => {
 
 const showGeneo = () => {
   if (testImg) {
-    if (polyString.value != "") {
+    if (polynomial.value != "") {
       try {
-        var geneoMatrix = usePoly().evalPoly(
-          polyString.value,
+        var polynomialUtils = new PolynomialUtils(
           testImgMatrix,
           testImg,
           canvasSize.value,
           listOfPermutantSelected.value
         );
+        var geneoMatrix = polynomialUtils.evaluate(polynomial.value);
         console.log(geneoMatrix);
       } catch (e) {
         // alertPopup.value = true;
@@ -338,7 +338,6 @@ const showGeneo = () => {
 
 const initTestImage = () => {
   if (testImg) {
-    //willReadFrequently
     var ctx = myCanvas1.getContext("2d", { willReadFrequently: true });
     if (ctx) {
       ctx.clearRect(0, 0, canvasSize.value, canvasSize.value);
@@ -400,7 +399,7 @@ watch(
   { immediate: true }
 );
 
-watch([polyString, listOfPermutantSelected], () => showGeneo(), { deep: true });
+watch([polynomial, listOfPermutantSelected], () => showGeneo(), { deep: true });
 </script>
 
 <style scoped></style>
