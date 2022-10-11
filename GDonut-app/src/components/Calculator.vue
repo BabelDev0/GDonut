@@ -200,7 +200,7 @@
 <script setup lang="ts">
 import { Matrix } from "ml-matrix";
 import { onMounted, ref, watch } from "vue";
-import { useMatrixCanvas } from "../composables/useMatrixCanvas";
+import { CanvasUtils } from "../utils/CanvasUtils";
 import { usePoly } from "../composables/usePoly";
 import { save } from "@tauri-apps/api/dialog";
 import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
@@ -325,7 +325,7 @@ const showGeneo = () => {
       }
 
       if (geneoMatrix!) {
-        useMatrixCanvas().drawMatrix(geneoMatrix, myCanvasGeneo);
+        CanvasUtils.drawMatrix(geneoMatrix, myCanvasGeneo);
       }
     } else {
       var ctx = myCanvasGeneo.getContext("2d", { willReadFrequently: true });
@@ -361,7 +361,7 @@ const initTestImage = () => {
         canvasSize.value
       );
 
-      testImgMatrix = useMatrixCanvas().arrayCanvasToMatrix(
+      testImgMatrix = CanvasUtils.canvasToMatrix(
         testImgData.data,
         canvasSize.value,
         canvasSize.value
