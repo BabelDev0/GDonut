@@ -1,5 +1,5 @@
 import { Matrix } from "ml-matrix";
-import { useMatrixCanvas } from "../composables/useMatrixCanvas";
+import { CanvasUtils } from "../utils/CanvasUtils";
 import { useTorus } from "../composables/useTorus";
 import { create, all, Parser, factorial } from "mathjs";
 
@@ -60,7 +60,7 @@ const rotation = (
             canvasSize
         );
 
-        var torus_2 = useMatrixCanvas().arrayCanvasToMatrix(
+        var torus_2 = CanvasUtils.canvasToMatrix(
             testImgDataRotate.data,
             canvasSize,
             canvasSize
@@ -126,7 +126,7 @@ const reflection = (
             canvasSize
         );
 
-        var torus_3 = useMatrixCanvas().arrayCanvasToMatrix(
+        var torus_3 = CanvasUtils.canvasToMatrix(
             testImgDataReflect.data,
             canvasSize,
             canvasSize
@@ -191,7 +191,7 @@ const eleSymPoly = (rank: number, canvasSize: number, ...args: number[][]) => {
 
     let matrices: Matrix[];
     matrices = args.map((arg: any) => {
-        return useMatrixCanvas().arrayCanvasToMatrix(arg, canvasSize, canvasSize);
+        return CanvasUtils.canvasToMatrix(arg, canvasSize, canvasSize);
     });
 
     for (var i = 0; i < nCr; i++) {
@@ -251,10 +251,16 @@ const getParser = (
 
         parser.set('m', function (...args: number[][]) {
             let matrices: Matrix[];
-            matrices = args.map((arg: any) => {
-                return useMatrixCanvas().arrayCanvasToMatrix(arg, canvasSize, canvasSize);
+            matrices = args.map((arg) => {
+                return CanvasUtils.canvasToMatrix(arg, canvasSize, canvasSize);
             });
-            return useMatrixCanvas().multiplyMatrix(matrices).to1DArray();
+            return CanvasUtils.multiplyMatrices(matrices).to1DArray();
+        });
+
+        parser.set('p', function (base: number[], exp: number) {
+            var baseMatrix = CanvasUtils.canvasToMatrix(base, canvasSize, canvasSize);
+            var powMatrix = Matrix.pow(baseMatrix, exp);
+            return powMatrix.to1DArray();
         });
 
         parser.set('s', function (rank: number, ...args: number[][]) {
