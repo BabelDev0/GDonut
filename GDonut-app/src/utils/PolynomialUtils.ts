@@ -92,9 +92,11 @@ export class PolynomialUtils {
                 this.canvasSize
             );
 
+            var result = CanvasUtils.canvasToMatrix(testImgDataRotate.data, this.canvasSize, this.canvasSize);
+
             ctxRotate = ctxRotatePre;
 
-            return testImgDataRotate.data;
+            return result.to1DArray();
         }
         else {
             console.log("ctxRotate is null");
@@ -159,9 +161,11 @@ export class PolynomialUtils {
                 this.canvasSize
             );
 
+            var result = CanvasUtils.canvasToMatrix(testImgDataReflect.data, this.canvasSize, this.canvasSize);
+
             ctxReflect = ctxReflectPre;
 
-            return testImgDataReflect.data;
+            return result.to1DArray();
         }
         else {
             console.log("ctxReflect is null");
