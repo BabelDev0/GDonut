@@ -33,16 +33,4 @@ export class CanvasUtils {
             ctx.putImageData(imgData, 0, 0);
         }
     }
-
-    /**
-     * Return the product of an array of matrices
-     * 
-     * @param matrices 
-     * @returns the product of the matricest
-    */
-    static multiplyMatrices(matrices: Matrix[]): Matrix {
-        return matrices.reduce((acc, val) => {
-            return Matrix.multiply(acc, val);
-        });
-    };
 }
