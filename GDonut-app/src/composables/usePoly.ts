@@ -1,6 +1,6 @@
 import { Matrix } from "ml-matrix";
 import { CanvasUtils } from "../utils/CanvasUtils";
-import { useTorus } from "../composables/useTorus";
+import { TorusUtils } from "../utils/TorusUtils";
 import { create, all, Parser, factorial } from "mathjs";
 
 const spaceMoviment = (
@@ -9,7 +9,7 @@ const spaceMoviment = (
     testImgMatrix: Matrix,
     canvasSize: number,
 ) => {
-    return useTorus().putImgInTorus(
+    return TorusUtils.putImgInTorus(
         x,
         y,
         testImgMatrix,
