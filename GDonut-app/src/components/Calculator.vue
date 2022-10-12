@@ -214,13 +214,13 @@ const listOfPermutants = [
   {
     label: "",
     internalName: "lin",
-    description: "linear displacement",
+    description: "translations",
     rules: "enter displacement in the format: x,y",
   },
   {
     label: "",
     internalName: "rot",
-    description: "rotation around the center of the image",
+    description: "rotation around the center of the image (90N)",
     rules: "enter degrees: deg multiples of 90",
   },
   {
@@ -244,7 +244,7 @@ const selectGroup = (group: string) => {
     listOfPermutantsByGroup.value.push(listOfPermutants[1]);
     listOfPermutantsByGroup.value.push(listOfPermutants[2]);
   } else if (group == "Second") {
-    listOfPermutantsByGroup.value.push(listOfPermutants[1]);
+    listOfPermutantsByGroup.value.push(listOfPermutants[0]);
     listOfPermutantsByGroup.value.push(listOfPermutants[2]);
     listOfPermutantsByGroup.value.push(listOfPermutants[3]);
   }
