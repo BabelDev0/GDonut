@@ -1,7 +1,7 @@
 import { Matrix } from "ml-matrix";
 import { CanvasUtils } from "./CanvasUtils";
 import { TorusUtils } from "./TorusUtils";
-import { create, all, Parser, factorial, re } from "mathjs";
+import { create, all, Parser, factorial } from "mathjs";
 
 export class PolynomialUtils {
     image: Matrix;
@@ -197,6 +197,18 @@ export class PolynomialUtils {
     };
 
     /**
+     * Returns the the division by a scalar of a matrix
+     * 
+     * @param dividend matrix to be divided
+     * @param divider nubmer to divide the matrix
+     * @returns the array with the data of matrix divided by the scalar
+     */
+    dividedMatrixByScalar(dividend: Matrix, divider: number) {
+        var result = Matrix.divide(dividend, divider);
+        return result.to1DArray();
+    };
+
+    /**
      * Returns array containing the result of the base matrix power to the exponent
      * 
      * @param base base matrix
@@ -297,44 +309,6 @@ export class PolynomialUtils {
 
     //todo the geneo constant
 
-    parsingLatex(polynomial: string) {
-        // \sigma_1(a_1,a_2)+\sigma_2(a_1,a_2)^2+\sigma_1(a_1,a_2)*\sigma_2(a_1,a_2)
-        // s(1,a_1,a_2)+s(2,a_1,a_2)^2+s(1,a_1,a_2)*s(2,a_1,a_2)
-        // s(1,a_1,a_2)+p(s(2,a_1,a_2),2)+s(1,a_1,a_2)s*(2,a_1,a_2)
-        // s(1,a_1,a_2)+p(s(2,a_1,a_2),2)+m(s(1,a_1,a_2),s(2,a_1,a_2))
-
-        polynomial = polynomial.replace(/\\sigma_(\d+)\(/g, "s($1,");
-
-        var index = polynomial.indexOf("^");
-        while (index != -1 && index < polynomial.length) {
-            var i = index - 1;
-            while (polynomial[i] != "+" && polynomial[i] != "-" && polynomial[i] != "*" && polynomial[i] != "/" && i >= 0) {
-                i--;
-            }
-            // todo for more than one nuber after ^
-            polynomial = polynomial.substring(0, i + 1) + "p(" + polynomial.substring(i + 1, index) + "," + polynomial.substring(index + 1, index + 2) + ")" + polynomial.substring(index + 2);
-            index = polynomial.indexOf("^");
-
-        }
-
-        // todo upgrade m can accept more than two parameters
-        index = polynomial.indexOf("*");
-        while (index != -1 && index < polynomial.length) {
-            var i = index - 1;
-            while (polynomial[i] != "+" && polynomial[i] != "-" && polynomial[i] != "*" && polynomial[i] != "/" && i >= 0) {
-                i--;
-            }
-            var j = index + 1;
-            while (polynomial[j] != "+" && polynomial[j] != "-" && polynomial[j] != "*" && polynomial[j] != "/" && j < polynomial.length) {
-                j++;
-            }
-            polynomial = polynomial.substring(0, i + 1) + "m(" + polynomial.substring(i + 1, index) + "," + polynomial.substring(index + 1, j) + ")" + polynomial.substring(j);
-            index = polynomial.indexOf("*");
-        }
-
-        return polynomial;
-    }
-
     /**
      * Returns a parser capable of transform permutant and elementary symmetric function in array of numbers
      * with which it possible to evaluate the polynomial
@@ -392,6 +366,12 @@ export class PolynomialUtils {
             return this.multiplyMatrices(matrices);
         });
 
+        parser.set('f', (dividend: number[], divider: number) => {
+            let dividendMatrix: Matrix;
+            dividendMatrix = CanvasUtils.canvasToMatrix(dividend, this.canvasSize, this.canvasSize);
+            return this.dividedMatrixByScalar(dividendMatrix, divider);
+        });
+
         parser.set('p', (base: number[], exp: number) => {
             var baseMatrix = CanvasUtils.canvasToMatrix(base, this.canvasSize, this.canvasSize);
             return this.powerMatrix(baseMatrix, exp);
@@ -415,8 +395,7 @@ export class PolynomialUtils {
     evaluate(polynomial: string) {
         const parser = this.getParser();
         if (parser) {
-            var polyInternal = this.parsingLatex(polynomial);
-            var result = parser.evaluate(polyInternal);
+            var result = parser.evaluate(polynomial);
             var matrixResult = CanvasUtils.canvasToMatrix(result, this.canvasSize, this.canvasSize);
             parser.clear();
             return matrixResult;

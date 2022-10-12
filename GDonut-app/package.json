@@ -13,6 +13,7 @@
     "@quasar/extras": "^1.14.0",
     "@tauri-apps/api": "^1.0.0-rc.5",
     "mathjs": "^10.6.0",
+    "mathlive": "^0.83.0",
     "ml-matrix": "^6.10.0",
     "quasar": "^2.7.1",
     "vue": "^3.2.25"
