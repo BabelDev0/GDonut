@@ -84,6 +84,18 @@
       </div>
       <!-- POLY -->
       <div class="full-width row justify-center">
+        <math-field
+          id="formula"
+          class="full-width"
+          style="
+            font-size: 22px;
+            padding: 5px;
+            border: 1px solid rgba(0, 0, 0, 0.3);
+            outline-color: #bb2e29;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+          "
+        >
+        </math-field>
         <q-input
           square
           class="full-width"
@@ -186,6 +198,9 @@ import { PolynomialUtils } from "../utils/PolynomialUtils";
 import { save } from "@tauri-apps/api/dialog";
 import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
 import { desktopDir } from "@tauri-apps/api/path";
+import { MathfieldElement } from "mathlive";
+
+const mfe = new MathfieldElement();
 
 var canvasGeneo: any;
 var canvasOriginal: any;
@@ -266,6 +281,79 @@ const removePermutant = (label: string | undefined) => {
   listOfPermutantSelected.value.forEach((permutant, index) => {
     permutant.label = "a_" + (index + 1);
   });
+};
+
+const convertLaTeXToPolynomial = (polynomial: string) => {
+  // \sigma_1(a_1,a_2)+\sigma_2(a_1,a_2)^2+\sigma_1(a_1,a_2)*\sigma_2(a_1,a_2)
+  // s(1,a_1,a_2)+s(2,a_1,a_2)^2+s(1,a_1,a_2)*s(2,a_1,a_2)
+  // s(1,a_1,a_2)+p(s(2,a_1,a_2),2)+s(1,a_1,a_2)s*(2,a_1,a_2)
+  // s(1,a_1,a_2)+p(s(2,a_1,a_2),2)+m(s(1,a_1,a_2),s(2,a_1,a_2))
+
+  polynomial = polynomial.replace(/\\left/g, "");
+  polynomial = polynomial.replace(/\\right/g, "");
+  polynomial = polynomial.replace(/\\sigma_(\d+)\(/g, "s($1,");
+  polynomial = polynomial.replace(/\\frac\{(.+?)\}\{(\d+)\}/g, "f($1,$2)");
+  polynomial = polynomial.replace(/\\cdot/g, "*");
+
+  var index = polynomial.indexOf("^");
+  while (index != -1 && index < polynomial.length) {
+    var i = index - 1;
+    while (
+      polynomial[i] != "+" &&
+      polynomial[i] != "-" &&
+      polynomial[i] != "*" &&
+      polynomial[i] != "/" &&
+      i >= 0
+    ) {
+      i--;
+    }
+    // todo for more than one nuber after ^
+    polynomial =
+      polynomial.substring(0, i + 1) +
+      "p(" +
+      polynomial.substring(i + 1, index) +
+      "," +
+      polynomial.substring(index + 1, index + 2) +
+      ")" +
+      polynomial.substring(index + 2);
+    index = polynomial.indexOf("^");
+  }
+
+  // todo upgrade m can accept more than two parameters
+  index = polynomial.indexOf("*");
+  while (index != -1 && index < polynomial.length) {
+    var i = index - 1;
+    while (
+      polynomial[i] != "+" &&
+      polynomial[i] != "-" &&
+      polynomial[i] != "*" &&
+      polynomial[i] != "/" &&
+      i >= 0
+    ) {
+      i--;
+    }
+    var j = index + 1;
+    while (
+      polynomial[j] != "+" &&
+      polynomial[j] != "-" &&
+      polynomial[j] != "*" &&
+      polynomial[j] != "/" &&
+      j < polynomial.length
+    ) {
+      j++;
+    }
+    polynomial =
+      polynomial.substring(0, i + 1) +
+      "m(" +
+      polynomial.substring(i + 1, index) +
+      "," +
+      polynomial.substring(index + 1, j) +
+      ")" +
+      polynomial.substring(j);
+    index = polynomial.indexOf("*");
+  }
+
+  return polynomial;
 };
 
 const download_image = async () => {
@@ -361,6 +449,11 @@ onMounted(() => {
   canvasOriginal = document.getElementById("canvasOriginal");
   canvasGeneo = document.getElementById("canvasGeneo");
   canvasSize.value = 300;
+  if (document && document.getElementById("formula")) {
+    document.getElementById("formula")!.addEventListener("input", (ev: any) => {
+      polynomial.value = ev.target.value;
+    });
+  }
 });
 
 watch(
@@ -378,7 +471,14 @@ watch(
   { immediate: true }
 );
 
-watch([polynomial, listOfPermutantSelected], () => showGeneo(), { deep: true });
+watch(
+  [polynomial, listOfPermutantSelected],
+  () => {
+    polynomial.value = convertLaTeXToPolynomial(polynomial.value);
+    showGeneo();
+  },
+  { deep: true }
+);
 </script>
 
 <style scoped></style>
