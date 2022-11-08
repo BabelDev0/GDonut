@@ -98,21 +98,6 @@
           plonk-sound="none"
         >
         </math-field>
-        <q-input
-          square
-          class="full-width"
-          outlined
-          v-model="polynomial"
-          label="Polynomial"
-        >
-          <template v-slot:append>
-            <q-icon
-              name="close"
-              @click="polynomial = ''"
-              class="cursor-pointer"
-            />
-          </template>
-        </q-input>
       </div>
       <!-- PERMUTANTS SELECTED -->
       <div class="full-width row justify-center q-pt-md">
