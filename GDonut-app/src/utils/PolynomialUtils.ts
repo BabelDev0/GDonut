@@ -307,7 +307,82 @@ export class PolynomialUtils {
         return result.to1DArray();
     }
 
+    LaTeXToPoly = (polynomial: string): string => {
+        polynomial = polynomial.replace(/\\left/g, "");
+        polynomial = polynomial.replace(/\\right/g, "");
+        polynomial = polynomial.replace(/\\sigma_(\d+)\(/g, "s($1,");
+        polynomial = polynomial.replace(/\\frac\{(.+?)\}\{(\d+)\}/g, "f($1,$2)");
+        polynomial = polynomial.replace(/\\cdot/g, "*");
+
+        var index = polynomial.indexOf("^");
+        while (index != -1 && index < polynomial.length) {
+            var i = index - 1;
+            while (
+                polynomial[i] != "+" &&
+                polynomial[i] != "-" &&
+                polynomial[i] != "*" &&
+                polynomial[i] != "/" &&
+                i >= 0
+            ) {
+                i--;
+            }
+            // todo for more than one nuber after ^
+            polynomial =
+                polynomial.substring(0, i + 1) +
+                "p(" +
+                polynomial.substring(i + 1, index) +
+                "," +
+                polynomial.substring(index + 1, index + 2) +
+                ")" +
+                polynomial.substring(index + 2);
+            index = polynomial.indexOf("^");
+        }
+
+        // todo upgrade m can accept more than two parameters
+        index = polynomial.indexOf("*");
+        while (index != -1 && index < polynomial.length) {
+            var i = index - 1;
+            while (
+                polynomial[i] != "+" &&
+                polynomial[i] != "-" &&
+                polynomial[i] != "*" &&
+                polynomial[i] != "/" &&
+                i >= 0
+            ) {
+                i--;
+            }
+            var j = index + 1;
+            while (
+                polynomial[j] != "+" &&
+                polynomial[j] != "-" &&
+                polynomial[j] != "*" &&
+                polynomial[j] != "/" &&
+                j < polynomial.length
+            ) {
+                j++;
+            }
+            polynomial =
+                polynomial.substring(0, i + 1) +
+                "m(" +
+                polynomial.substring(i + 1, index) +
+                "," +
+                polynomial.substring(index + 1, j) +
+                ")" +
+                polynomial.substring(j);
+            index = polynomial.indexOf("*");
+        }
+
+        return polynomial;
+    };
+
     //todo the geneo constant
+    /**
+     * Returns the geneo constant, based on the elementary symmetric polynomial passed
+     */
+    getGeneoConstant(polynomial: string): number {
+        const n = 2;
+        return 0;
+    }
 
     /**
      * Returns a parser capable of transform permutant and elementary symmetric function in array of numbers
@@ -395,6 +470,7 @@ export class PolynomialUtils {
     evaluate(polynomial: string) {
         const parser = this.getParser();
         if (parser) {
+            polynomial = this.LaTeXToPoly(polynomial);
             var result = parser.evaluate(polynomial);
             var matrixResult = CanvasUtils.canvasToMatrix(result, this.canvasSize, this.canvasSize);
             parser.clear();
