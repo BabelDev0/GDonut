@@ -6,7 +6,12 @@ import { quasar, transformAssetUrls } from '@quasar/vite-plugin'
 export default defineConfig({
   plugins: [
     vue({
-      template: { transformAssetUrls }
+      template: {
+        transformAssetUrls, compilerOptions: {
+          // treat all tags with a dash as custom elements
+          isCustomElement: (tag) => tag === 'math-field'
+        }
+      }
     }),
 
     quasar({
