@@ -8,6 +8,7 @@ export class PolynomialUtils {
     canvas: HTMLImageElement;
     canvasSize: number;
     permutantSelected: Permutant[];
+    Mimg: number = 1;
 
     constructor(
         image: Matrix,
@@ -308,80 +309,169 @@ export class PolynomialUtils {
     }
 
     LaTeXToPoly = (polynomial: string): string => {
-        polynomial = polynomial.replace(/\\left/g, "");
-        polynomial = polynomial.replace(/\\right/g, "");
-        polynomial = polynomial.replace(/\\sigma_(\d+)\(/g, "s($1,");
-        polynomial = polynomial.replace(/\\frac\{(.+?)\}\{(\d+)\}/g, "f($1,$2)");
-        polynomial = polynomial.replace(/\\cdot/g, "*");
+        var ply = polynomial;
+        ply = ply.replace(/\\left/g, "")
+        ply = ply.replace(/\\left/g, "")
+        ply = ply.replace(/\\right/g, "")
+        ply = ply.replace(/\\sigma_(\d+)\(/g, "s($1,")
+        ply = ply.replace(/\\frac\{(.+?)\}\{(\d+)\}/g, "f($1,$2)")
+        ply = ply.replace(/\\cdot/g, "*");
 
-        var index = polynomial.indexOf("^");
-        while (index != -1 && index < polynomial.length) {
+        var index = ply.indexOf("^");
+        while (index != -1 && index < ply.length) {
             var i = index - 1;
             while (
-                polynomial[i] != "+" &&
-                polynomial[i] != "-" &&
-                polynomial[i] != "*" &&
-                polynomial[i] != "/" &&
+                ply[i] != "+" &&
+                ply[i] != "-" &&
+                ply[i] != "*" &&
+                ply[i] != "/" &&
                 i >= 0
             ) {
                 i--;
             }
             // todo for more than one nuber after ^
-            polynomial =
-                polynomial.substring(0, i + 1) +
+            ply =
+                ply.substring(0, i + 1) +
                 "p(" +
-                polynomial.substring(i + 1, index) +
+                ply.substring(i + 1, index) +
                 "," +
-                polynomial.substring(index + 1, index + 2) +
+                ply.substring(index + 1, index + 2) +
                 ")" +
-                polynomial.substring(index + 2);
-            index = polynomial.indexOf("^");
+                ply.substring(index + 2);
+            index = ply.indexOf("^");
         }
 
         // todo upgrade m can accept more than two parameters
-        index = polynomial.indexOf("*");
-        while (index != -1 && index < polynomial.length) {
+        index = ply.indexOf("*");
+        while (index != -1 && index < ply.length) {
             var i = index - 1;
             while (
-                polynomial[i] != "+" &&
-                polynomial[i] != "-" &&
-                polynomial[i] != "*" &&
-                polynomial[i] != "/" &&
+                ply[i] != "+" &&
+                ply[i] != "-" &&
+                ply[i] != "*" &&
+                ply[i] != "/" &&
                 i >= 0
             ) {
                 i--;
             }
             var j = index + 1;
             while (
-                polynomial[j] != "+" &&
-                polynomial[j] != "-" &&
-                polynomial[j] != "*" &&
-                polynomial[j] != "/" &&
-                j < polynomial.length
+                ply[j] != "+" &&
+                ply[j] != "-" &&
+                ply[j] != "*" &&
+                ply[j] != "/" &&
+                j < ply.length
             ) {
                 j++;
             }
-            polynomial =
-                polynomial.substring(0, i + 1) +
+            ply =
+                ply.substring(0, i + 1) +
                 "m(" +
-                polynomial.substring(i + 1, index) +
+                ply.substring(i + 1, index) +
                 "," +
-                polynomial.substring(index + 1, j) +
+                ply.substring(index + 1, j) +
                 ")" +
-                polynomial.substring(j);
-            index = polynomial.indexOf("*");
+                ply.substring(j);
+            index = ply.indexOf("*");
         }
 
-        return polynomial;
+        return ply;
     };
 
-    //todo the geneo constant
+    MCapitolOne = (n: number, ranks: number[]): number => {
+        const tempMs = [];
+        for (var i = 1; i <= n; i++) {
+            tempMs.push(
+                ranks[i - 1]
+                * i
+                * Math.pow(this.binom(n, i), ranks[i - 1])
+                * Math.pow(this.Mimg, (i * (ranks[i - 1] - 1)))
+            );
+        }
+        const m1 = tempMs.reduce((a, b) => Math.max(a, b))
+        return m1;
+    }
+
+    MCapitolTwo = (n: number, ranks: number[]): number => {
+        const tempMs = [];
+        for (var i = 1; i <= n; i++) {
+            tempMs.push(
+                Math.pow(this.binom(n, i), ranks[i - 1])
+                * Math.pow(this.Mimg, (i * ranks[i - 1]))
+            );
+        }
+        const m2 = Math.pow((tempMs.reduce((a, b) => Math.max(a, b))), (n - 1));
+        return m2;
+    }
+
     /**
      * Returns the geneo constant, based on the elementary symmetric polynomial passed
      */
     getGeneoConstant(polynomial: string): number {
-        const n = 2;
-        return 0;
+
+        var ply = polynomial;
+        ply = ply.replace(/\\left\(?\)?/g, "")
+        ply = ply.replace(/\\right\(?\)?/g, "")
+        ply = ply.replace(/\\cdot/g, "*")
+        ply = ply.replace(/\^(\d+)/g, "^{$1}")
+        ply = ply.replace(/\\sigma_(\d+)/g, "s($1)")
+        ply = ply.replace(/\(a_\d+(,a_\d+)*\)/g, "")
+        ply = ply.replace(/\+s\((\d+)\)/g, "+1*s($1)")
+        ply = ply.replace(/^s\((\d+)\)/g, "1*s($1)")
+        ply = ply.replace(/-s\((\d+)\)/g, "-1*s($1)")
+        ply = ply.replace(/\\frac\{(\d+)\}\{(\d+)\}/g, (match, p1, p2) => {
+            return (+(p1) / +(p2)).toString();
+        });
+        console.log("polyConstant " + ply);
+
+        var regex = /(-?\d*.?\d+)?\*?s\((\d+)\)(\^\{(-?\d*.?\d+)\})?/g;
+        var match;
+        var n = 0;
+        var coefficients: number[] = [];
+        var exponents: number[][] = [];
+
+        var count = 0;
+
+        while (match = regex.exec(ply)) {
+            console.log(match);
+            if (parseInt(match[2]) > n) {
+                n = parseInt(match[2]);
+            }
+            if (match[1] !== undefined) {
+                coefficients.push(+(match[1]));
+                count++;
+            }
+        }
+
+        for (var i = 0; i < count; i++) {
+            exponents.push(new Array(n).fill(0));
+        }
+        count = 0;
+
+        while (match = regex.exec(ply)) {
+            if (match[1] === undefined) {
+                count--;
+            }
+
+            if (match[4] !== undefined) {
+                exponents[count][parseInt(match[2]) - 1] = +(match[4]);
+            }
+            else {
+                exponents[count][parseInt(match[2]) - 1] = 1;
+            }
+
+            count++;
+        }
+
+        var c = 0;
+        for (var i = 0; i < coefficients.length; i++) {
+            c += Math.abs(coefficients[i])
+                * this.MCapitolOne(n, exponents[i])
+                * this.MCapitolTwo(n, exponents[i]);
+        }
+        c *= n;
+        console.log("const " + c);
+        return c;
     }
 
     /**
@@ -467,12 +557,21 @@ export class PolynomialUtils {
      * @param polynomial polynomial to evaluate
      * @returns matrix containing the result of the evaluation of the polynomial
      */
-    evaluate(polynomial: string) {
+    evaluate(polynomialLatex: string) {
         const parser = this.getParser();
         if (parser) {
-            polynomial = this.LaTeXToPoly(polynomial);
-            var result = parser.evaluate(polynomial);
+            const poly = this.LaTeXToPoly(polynomialLatex);
+            const constant = this.getGeneoConstant(polynomialLatex);
+            console.log("poly " + poly);
+            console.log("latex " + polynomialLatex);
+
+            var result = parser.evaluate(poly);
+
             var matrixResult = CanvasUtils.canvasToMatrix(result, this.canvasSize, this.canvasSize);
+            if (constant !== 0) {
+                var matrixResult2 = Matrix.divide(matrixResult, constant);
+                console.log(matrixResult2);
+            }
             parser.clear();
             return matrixResult;
         }
