@@ -308,75 +308,122 @@ export class PolynomialUtils {
         return result.to1DArray();
     }
 
-    LaTeXToPoly = (polynomial: string): string => {
+    LaTeXToPolyGen = (polynomial: string): string => {
         var ply = polynomial;
-        ply = ply.replace(/\\left/g, "")
-        ply = ply.replace(/\\left/g, "")
-        ply = ply.replace(/\\right/g, "")
-        ply = ply.replace(/\\sigma_(\d+)\(/g, "s($1,")
-        ply = ply.replace(/\\frac\{(.+?)\}\{(\d+)\}/g, "f($1,$2)")
+        //replcace \left( and \right) with ( and )
+        ply = ply.replace(/\\left\(/g, "(");
+        ply = ply.replace(/\\right\)/g, ")");
+        // replace all a_1,...,a_n 
+        ply = ply.replace(/\(a_\d+(,a_\d+)*\)/g, "");
+        // replace \sigma_{n} to s(n)
+        ply = ply.replace(/\\sigma_(\d+)/g, "s($1)");
+        ply = ply.replace(/\\sigma_\{(\d+)\}/g, "s($1)");
+        // replace \cdot to *
         ply = ply.replace(/\\cdot/g, "*");
 
-        var index = ply.indexOf("^");
-        while (index != -1 && index < ply.length) {
-            var i = index - 1;
-            while (
-                ply[i] != "+" &&
-                ply[i] != "-" &&
-                ply[i] != "*" &&
-                ply[i] != "/" &&
-                i >= 0
-            ) {
-                i--;
-            }
-            // todo for more than one nuber after ^
-            ply =
-                ply.substring(0, i + 1) +
-                "p(" +
-                ply.substring(i + 1, index) +
-                "," +
-                ply.substring(index + 1, index + 2) +
-                ")" +
-                ply.substring(index + 2);
-            index = ply.indexOf("^");
-        }
+        ply = ply.replace(/\+s\((\d+)\)/g, "+1*s($1)")
+        ply = ply.replace(/^s\((\d+)\)/g, "1*s($1)")
+        ply = ply.replace(/-s\((\d+)\)/g, "-1*s($1)")
 
-        // todo upgrade m can accept more than two parameters
-        index = ply.indexOf("*");
-        while (index != -1 && index < ply.length) {
-            var i = index - 1;
-            while (
-                ply[i] != "+" &&
-                ply[i] != "-" &&
-                ply[i] != "*" &&
-                ply[i] != "/" &&
-                i >= 0
-            ) {
-                i--;
+        // replace all ^a with ^{a}
+        ply = ply.replace(/\^(-?\d+\.?\d*)/g, "^{$1}");
+
+        // loop and replace all n*r with the result of the multiplication until there is no more n*r
+        var loop = true;
+        while (loop) {
+            ply = ply.replace(/(-?\d+\.?\d*)\*(-?\d+\.?\d*)/g, (match, p1, p2) => {
+                return (Number(p1) * Number(p2)).toString();
+            });
+            if (ply.search(/(-?\d+\.?\d*)\*(-?\d+\.?\d*)/) == -1) {
+                loop = false;
             }
-            var j = index + 1;
-            while (
-                ply[j] != "+" &&
-                ply[j] != "-" &&
-                ply[j] != "*" &&
-                ply[j] != "/" &&
-                j < ply.length
-            ) {
-                j++;
-            }
-            ply =
-                ply.substring(0, i + 1) +
-                "m(" +
-                ply.substring(i + 1, index) +
-                "," +
-                ply.substring(index + 1, j) +
-                ")" +
-                ply.substring(j);
-            index = ply.indexOf("*");
         }
+        // replace all \frac{a}{b} to result of divided a and b, a and b can be double and negative
+        ply = ply.replace(/\\frac{(-?\d+\.?\d*)}{(-?\d+\.?\d*)}/g, (match, p1, p2) => {
+            return (Number(p1) / Number(p2)).toString();
+        });
 
         return ply;
     };
+
+    LaTeXToPolySpc = (polynomial: string): string => {
+        var ply = polynomial;
+        // trasform \fract{something}{something} to f(something,something)
+        var regex = /\\frac{/g;
+        var match = null;
+        while ((match = regex.exec(ply)) != null) {
+            var isClosing = 1;
+            var i = 0;
+            var first = "";
+            for (i = match.index + 6; i < ply.length; i++) {
+                if (ply[i] == "{") {
+                    isClosing++;
+                }
+                else if (ply[i] == "}") {
+                    isClosing--;
+                }
+                if (isClosing == 0) {
+                    break;
+                }
+                else {
+                    first += ply[i];
+                }
+            }
+            var second = "";
+            isClosing = 1;
+            for (i = i + 2; i < ply.length; i++) {
+                if (ply[i] == "{") {
+                    isClosing++;
+                }
+                else if (ply[i] == "}") {
+                    isClosing--;
+                }
+                if (isClosing == 0) {
+                    break;
+                }
+                else {
+                    second += ply[i];
+                }
+            }
+
+            ply = ply.substring(0, match.index) + "f(" + first + "," + second + ")" + ply.substring(i + 1);
+        }
+
+        // trasform s(n)*s(r) to m(s(n),s(r))
+        var regexs = [
+            /(s\(\d+\))\*(s\(\d+\))/g,
+            /(m\(.*\))\*(s\(\d+\))/g,
+            /(m\(.*\))\*(m\(.*\))/g
+        ]
+        for (var i = 0; i < regexs.length; i++) {
+            var regex = regexs[i];
+            var match = null;
+            while ((match = regex.exec(ply)) != null) {
+                var first = match[1];
+                var second = match[2];
+                ply = ply.substring(0, match.index) + "m(" + first + "," + second + ")" + ply.substring(match.index + match[0].length);
+            }
+        }
+
+        // trasform s(n)^{k} to p(s(n),k)
+        regex = /(s\(\d+\))\^\{(-?\d+\.?\d*)\}/g;
+        match = null;
+        while ((match = regex.exec(ply)) != null) {
+            ply = ply.substring(0, match.index) + "p(" + match[1] + "," + match[2] + ")" + ply.substring(match.index + match[0].length);
+        }
+
+        return ply;
+    }
+
+    LaTeXToPoly = (polynomial: string): string => {
+        console.log("latex " + polynomial);
+        var ply = polynomial;
+        ply = this.LaTeXToPolyGen(ply);
+        console.log("plyGEN " + ply);
+        ply = this.LaTeXToPolySpc(ply);
+        console.log("plySPC " + ply);
+        return ply;
+    }
 
     MCapitolOne = (n: number, ranks: number[]): number => {
         const tempMs = [];
@@ -409,19 +456,7 @@ export class PolynomialUtils {
      */
     getGeneoConstant(polynomial: string): number {
 
-        var ply = polynomial;
-        ply = ply.replace(/\\left\(?\)?/g, "")
-        ply = ply.replace(/\\right\(?\)?/g, "")
-        ply = ply.replace(/\\cdot/g, "*")
-        ply = ply.replace(/\^(\d+)/g, "^{$1}")
-        ply = ply.replace(/\\sigma_(\d+)/g, "s($1)")
-        ply = ply.replace(/\(a_\d+(,a_\d+)*\)/g, "")
-        ply = ply.replace(/\+s\((\d+)\)/g, "+1*s($1)")
-        ply = ply.replace(/^s\((\d+)\)/g, "1*s($1)")
-        ply = ply.replace(/-s\((\d+)\)/g, "-1*s($1)")
-        ply = ply.replace(/\\frac\{(\d+)\}\{(\d+)\}/g, (match, p1, p2) => {
-            return (+(p1) / +(p2)).toString();
-        });
+        var ply = this.LaTeXToPolyGen(polynomial);
         console.log("polyConstant " + ply);
 
         var regex = /(-?\d*.?\d+)?\*?s\((\d+)\)(\^\{(-?\d*.?\d+)\})?/g;
@@ -470,6 +505,8 @@ export class PolynomialUtils {
                 * this.MCapitolTwo(n, exponents[i]);
         }
         c *= n;
+        console.log("exponents " + exponents);
+        console.log("coefficients " + coefficients);
         console.log("const " + c);
         return c;
     }
@@ -561,17 +598,11 @@ export class PolynomialUtils {
         const parser = this.getParser();
         if (parser) {
             const poly = this.LaTeXToPoly(polynomialLatex);
-            const constant = this.getGeneoConstant(polynomialLatex);
-            console.log("poly " + poly);
-            console.log("latex " + polynomialLatex);
+            const geneoConst = this.getGeneoConstant(polynomialLatex);
 
-            var result = parser.evaluate(poly);
-
+            var result = parser.evaluate(polynomialLatex);
+            console.log(result);
             var matrixResult = CanvasUtils.canvasToMatrix(result, this.canvasSize, this.canvasSize);
-            if (constant !== 0) {
-                var matrixResult2 = Matrix.divide(matrixResult, constant);
-                console.log(matrixResult2);
-            }
             parser.clear();
             return matrixResult;
         }
