@@ -8,7 +8,8 @@ export class PolynomialUtils {
     canvas: HTMLImageElement;
     canvasSize: number;
     permutantSelected: Permutant[];
-    Mimg: number = 1;
+    Mimg: number = 255;
+    rankPoly: number = 0;
 
     constructor(
         image: Matrix,
@@ -204,8 +205,10 @@ export class PolynomialUtils {
      * @param divider nubmer to divide the matrix
      * @returns the array with the data of matrix divided by the scalar
      */
-    dividedMatrixByScalar(dividend: Matrix, divider: number) {
-        var result = Matrix.divide(dividend, divider);
+    divideMatrices(matrices: Matrix[]) {
+        var result = matrices.reduce((acc, val) => {
+            return Matrix.divide(acc, val);
+        });
         return result.to1DArray();
     };
 
@@ -295,8 +298,6 @@ export class PolynomialUtils {
             return CanvasUtils.canvasToMatrix(arg, this.canvasSize, this.canvasSize);
         });
 
-        // s(1,a_1,...,a_r) = a_1 + ... + a_r
-        // s(2,a_1,...,a_r) = a_1a_2+...+a_1a_r+a_2a_3+...+a_{r-1}a_r
         for (var order = 0; order < nCr; order++) {
             var step = Matrix.ones(this.canvasSize, this.canvasSize * 4);
             var combinations = this.A515(size, rank, order);
@@ -305,6 +306,7 @@ export class PolynomialUtils {
             }
             result = Matrix.add(result, step);
         }
+        // console.log("ele", result.to1DArray());
         return result.to1DArray();
     }
 
@@ -346,7 +348,7 @@ export class PolynomialUtils {
         return ply;
     };
 
-    LaTeXToPolySpc = (polynomial: string): string => {
+    LaTeXToPolySpc = (polynomial: string, args: string): string => {
         var ply = polynomial;
         // trasform \fract{something}{something} to f(something,something)
         var regex = /\\frac{/g;
@@ -412,17 +414,41 @@ export class PolynomialUtils {
             ply = ply.substring(0, match.index) + "p(" + match[1] + "," + match[2] + ")" + ply.substring(match.index + match[0].length);
         }
 
+        // trasform s(n) in s(n,args)
+        regex = /s\((\d+)\)/g;
+        match = null;
+        while ((match = regex.exec(ply)) != null) {
+            ply = ply.substring(0, match.index) + "s(" + match[1] + "," + args + ")" + ply.substring(match.index + match[0].length);
+        }
+
         return ply;
     }
 
     LaTeXToPoly = (polynomial: string): string => {
         console.log("latex " + polynomial);
+
         var ply = polynomial;
+        var regex = /\\sigma_\{?\d+\}?\((a_\d+(,a_\d+)*)\)/g;
+        var match = regex.exec(polynomial);
+        var args = match ? match[1] : "";
+        this.setRankPoly(args);
+
         ply = this.LaTeXToPolyGen(ply);
         console.log("plyGEN " + ply);
-        ply = this.LaTeXToPolySpc(ply);
+        ply = this.LaTeXToPolySpc(ply, args);
         console.log("plySPC " + ply);
         return ply;
+    }
+
+    setRankPoly = (args: string) => {
+        var n = 0;
+        var match = null;
+        var regex = /a_(\d+)/g;
+        while ((match = regex.exec(args)) != null) {
+            n = Math.max(n, Number(match[1]));
+        }
+
+        this.rankPoly = n;
     }
 
     MCapitolOne = (n: number, ranks: number[]): number => {
@@ -451,27 +477,18 @@ export class PolynomialUtils {
         return m2;
     }
 
-    /**
-     * Returns the geneo constant, based on the elementary symmetric polynomial passed
-     */
     getGeneoConstant(polynomial: string): number {
 
         var ply = this.LaTeXToPolyGen(polynomial);
-        console.log("polyConstant " + ply);
-
         var regex = /(-?\d*.?\d+)?\*?s\((\d+)\)(\^\{(-?\d*.?\d+)\})?/g;
         var match;
-        var n = 0;
+        var n = this.rankPoly;
         var coefficients: number[] = [];
         var exponents: number[][] = [];
 
         var count = 0;
 
         while (match = regex.exec(ply)) {
-            console.log(match);
-            if (parseInt(match[2]) > n) {
-                n = parseInt(match[2]);
-            }
             if (match[1] !== undefined) {
                 coefficients.push(+(match[1]));
                 count++;
@@ -505,9 +522,10 @@ export class PolynomialUtils {
                 * this.MCapitolTwo(n, exponents[i]);
         }
         c *= n;
-        console.log("exponents " + exponents);
-        console.log("coefficients " + coefficients);
-        console.log("const " + c);
+        console.log("n ", n);
+        console.log("exponents ", exponents);
+        console.log("coefficients ", coefficients);
+        console.log("const ", c);
         return c;
     }
 
@@ -559,7 +577,7 @@ export class PolynomialUtils {
             }
         });
 
-        //parsing actions
+        //parsing multiplication
         parser.set('m', (...args: number[][]) => {
             let matrices: Matrix[];
             matrices = args.map((arg) => {
@@ -568,12 +586,16 @@ export class PolynomialUtils {
             return this.multiplyMatrices(matrices);
         });
 
-        parser.set('f', (dividend: number[], divider: number) => {
-            let dividendMatrix: Matrix;
-            dividendMatrix = CanvasUtils.canvasToMatrix(dividend, this.canvasSize, this.canvasSize);
-            return this.dividedMatrixByScalar(dividendMatrix, divider);
+        // parsing division
+        parser.set('f', (...args: number[][]) => {
+            let matrices: Matrix[];
+            matrices = args.map((arg) => {
+                return CanvasUtils.canvasToMatrix(arg, this.canvasSize, this.canvasSize);
+            });
+            return this.divideMatrices(matrices);
         });
 
+        // parsing power
         parser.set('p', (base: number[], exp: number) => {
             var baseMatrix = CanvasUtils.canvasToMatrix(base, this.canvasSize, this.canvasSize);
             return this.powerMatrix(baseMatrix, exp);
@@ -599,10 +621,11 @@ export class PolynomialUtils {
         if (parser) {
             const poly = this.LaTeXToPoly(polynomialLatex);
             const geneoConst = this.getGeneoConstant(polynomialLatex);
-
-            var result = parser.evaluate(polynomialLatex);
-            console.log(result);
+            var result = parser.evaluate(poly);
             var matrixResult = CanvasUtils.canvasToMatrix(result, this.canvasSize, this.canvasSize);
+            // if (geneoConst != 0) {
+            //     matrixResult = Matrix.divide(matrixResult, geneoConst);
+            // }
             parser.clear();
             return matrixResult;
         }
