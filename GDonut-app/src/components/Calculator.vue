@@ -132,7 +132,7 @@
     <q-page-container>
       <!-- GENEO CANVAS -->
       <div class="full-width row justify-center">
-        <div class="column justify-start">
+        <div class="column justify-start q-mr-lg">
           <canvas
             class="q-mb-xs"
             id="canvasGeneo"
@@ -158,16 +158,50 @@
       </div>
       <!-- TEST CANVAS -->
       <div class="full-width row justify-center">
-        <div class="column justify-start">
-          <canvas
-            class="q-mt-md q-mb-xs"
-            id="canvasOriginal"
-            :width="canvasSize"
-            :height="canvasSize"
-            style="border: 1px solid #bb2e29"
-          >
-            Your browser does not support the HTML5 canvas tag.</canvas
-          >
+        <div class="">
+          <div class="row">
+            <div class="col-11">
+              <canvas
+                class="q-mt-md q-mb-xs"
+                id="canvasOriginal"
+                :width="canvasSize"
+                :height="canvasSize"
+                style="border: 1px solid #bb2e29"
+              >
+                Your browser does not support the HTML5 canvas tag.
+              </canvas>
+            </div>
+            <div class="col-1 q-mt-md">
+              <div class="q-my-sm q-ml-sm">
+                <q-btn
+                  round
+                  size="sm"
+                  color="primary"
+                  icon="rotate_90_degrees_cw"
+                  @click="initTestImage('r')"
+                />
+              </div>
+              <div class="q-my-sm q-ml-sm">
+                <q-btn
+                  round
+                  size="sm"
+                  color="primary"
+                  icon="flip"
+                  @click="initTestImage('x')"
+                />
+              </div>
+              <div class="q-my-sm q-ml-sm">
+                <q-btn
+                  round
+                  size="sm"
+                  color="primary"
+                  icon="flip"
+                  class="rotate-90"
+                  @click="initTestImage('y')"
+                />
+              </div>
+            </div>
+          </div>
           <div class="row justify-start">
             <small>{{ canvasSize }} X {{ canvasSize }} </small>
           </div>
@@ -318,11 +352,33 @@ const showGeneo = () => {
   }
 };
 
-const initTestImage = () => {
+const initTestImage = (type: string) => {
   if (testImg) {
     var ctx = canvasOriginal.getContext("2d", { willReadFrequently: true });
     if (ctx) {
       ctx.clearRect(0, 0, canvasSize.value, canvasSize.value);
+
+      if (type !== "") {
+        // move the context to the center of the canvas
+        ctx.translate(
+          Math.floor(canvasSize.value / 2),
+          Math.floor(canvasSize.value / 2)
+        );
+        if (type === "r") {
+          ctx.rotate((+90 * Math.PI) / 180);
+        }
+        if (type === "x") {
+          ctx.scale(1, -1);
+        } else if (type === "y") {
+          ctx.scale(-1, 1);
+        }
+
+        // move the context back to the top left of the canvas
+        ctx.translate(
+          -Math.floor(canvasSize.value / 2),
+          -Math.floor(canvasSize.value / 2)
+        );
+      }
       ctx.drawImage(
         testImg,
         0,
@@ -375,7 +431,7 @@ watch(
       var reader = new FileReader();
       reader.onload = () => {
         testImg.src = reader.result as string;
-        testImg.onload = () => initTestImage();
+        testImg.onload = () => initTestImage("");
       };
       reader.readAsDataURL(newVal);
     }
@@ -394,4 +450,11 @@ watch(
 
 <style scoped>
 @import "mathlive/dist/mathlive-fonts.css";
+.rotate_image {
+  -webkit-transform: rotate(45deg);
+  -moz-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  -o-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
 </style>
