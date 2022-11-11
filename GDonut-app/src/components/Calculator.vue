@@ -187,7 +187,7 @@
                   size="sm"
                   color="primary"
                   icon="flip"
-                  @click="initTestImage('x')"
+                  @click="initTestImage('y')"
                 />
               </div>
               <div class="q-my-sm q-ml-sm">
@@ -197,7 +197,7 @@
                   color="primary"
                   icon="flip"
                   class="rotate-90"
-                  @click="initTestImage('y')"
+                  @click="initTestImage('x')"
                 />
               </div>
             </div>
@@ -438,11 +438,19 @@ watch(
   },
   { immediate: true }
 );
-
+var timer = 0;
 watch(
   [polynomial, listOfPermutantSelected],
   () => {
-    showGeneo();
+    // delay the execution of the function showGeneo
+    // to avoid the execution of the function when the user is typing
+
+    if (timer) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(() => {
+      showGeneo();
+    }, 200);
   },
   { deep: true }
 );
