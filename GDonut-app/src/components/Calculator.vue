@@ -341,7 +341,8 @@ const showGeneo = () => {
         var geneoMatrix = polynomialUtils.evaluate(polynomial.value);
         console.log(geneoMatrix);
       } catch (e) {
-        console.log(e);
+        var ctx = canvasGeneo.getContext("2d");
+        ctx.clearRect(0, 0, canvasSize.value, canvasSize.value);
         return;
       }
 
