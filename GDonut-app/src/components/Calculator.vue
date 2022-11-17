@@ -45,7 +45,7 @@
           square
           flat
           v-model="group"
-          :label="groupSelected == '' ? 'Group' : groupSelected"
+          :label="groupSelected.label == '' ? 'Group' : groupSelected.label"
           vertical-actions-align="left"
           color="primary"
           icon="keyboard_arrow_down"
@@ -56,29 +56,8 @@
             square
             color="primary"
             @click="selectGroup(item)"
-            :label="item"
-            :key="item"
-          />
-        </q-fab>
-        <!-- select permutant -->
-        <q-fab
-          square
-          flat
-          v-model="permutant"
-          label="Permutant"
-          vertical-actions-align="left"
-          color="primary"
-          icon="add"
-          direction="down"
-          :disable="groupSelected == ''"
-        >
-          <q-fab-action
-            v-for="permutant in listOfPermutantsByGroup"
-            square
-            color="primary"
-            @click="selectPermutant(permutant)"
-            :label="permutant.description"
-            :key="permutant.description"
+            :label="item.label"
+            :key="item.label"
           />
         </q-fab>
       </div>
@@ -99,30 +78,39 @@
         >
         </math-field>
       </div>
-      <!-- PERMUTANTS SELECTED -->
+      <!-- PERMUTANTS -->
+      <!-- UNKNOWNS -->
       <div class="full-width row justify-center q-pt-md">
         <q-input
-          v-for="permutant in listOfPermutantSelected"
+          v-for="unknown in groupSelected.unknowns"
           square
-          class="full-width"
+          class="w-auto q-mx-xs"
           outlined
-          v-model="permutant.value"
-          :label="permutant.rules"
-          :hint="permutant.description"
+          v-model="unknown.value"
+          :key="unknown.label"
+        >
+          <template v-slot:prepend>
+            <q-chip color="primary" text-color="white" square>
+              {{ unknown.label }}
+            </q-chip>
+          </template>
+        </q-input>
+      </div>
+      <!-- LIST OF PERMUTANTS -->
+      <div class="full-width row justify-center q-pt-md">
+        <q-input
+          v-for="permutant in groupSelected.permutants"
+          square
+          class="full-width q-mb-sm"
+          outlined
+          v-model="permutant.description"
           :key="permutant.label"
-          :readonly="permutant.internalName == 'ide'"
+          :readonly="true"
         >
           <template v-slot:prepend>
             <q-chip color="primary" text-color="white" icon="calculate">
               {{ permutant.label }}
             </q-chip>
-          </template>
-          <template v-slot:append>
-            <q-icon
-              name="delete"
-              @click="removePermutant(permutant.label)"
-              class="cursor-pointer"
-            />
           </template>
         </q-input>
       </div>
@@ -226,80 +214,95 @@ var canvasOriginal: any;
 var testImg = new Image();
 var testImgMatrix: Matrix;
 const canvasSize = ref(0);
-const drawerSize = ref(450);
+const drawerSize = ref(500);
 const filePicker = ref(null);
 const leftDrawerOpen = ref(true);
 const polynomial = ref<string>("");
 
-const group = ref(false);
-const permutant = ref(false);
-const groupSelected = ref("");
-const groups = ["First", "Second"];
-const listOfPermutantsByGroup = ref<Permutant[]>([]);
-const listOfPermutantSelected = ref<Permutant[]>([]);
-
-const listOfPermutants = [
+const permutants: Array<Permutant> = [
   {
-    label: "",
-    internalName: "ide",
-    description: "identity",
-    rules: "identity no needed arguments",
-  },
-  {
-    label: "",
-    internalName: "lin",
-    description: "translations",
-    rules: "enter displacement in the format: x,y",
-  },
-  {
-    label: "",
+    label: "a_1",
     internalName: "rot",
-    description: "rotation around the center of the image (90N)",
-    rules: "enter degrees: deg multiples of 90",
+    description: "rotations around the centre of the image by 90 degrees",
+    value: "90",
   },
   {
-    label: "",
-    internalName: "ref",
-    description: "symmetry respect to axis or the origin",
-    rules: "enter the axis: x or y or xy",
+    label: "a_2",
+    internalName: "rot",
+    description: "rotations around the centre of the image by -90 degrees",
+    value: "-90",
+  },
+  {
+    label: "a_3",
+    internalName: "rot",
+    description: "rotations around the centre of the image by 180 degrees",
+    value: "180",
+  },
+  {
+    label: "a_4",
+    internalName: "rot",
+    description: "rotations around the centre of the image by 360 degrees",
+    value: "360",
+  },
+  {
+    label: "a_1",
+    internalName: "lin",
+    description: "linear translations of (x,y) pixels",
+    value: "x,y",
+  },
+  {
+    label: "a_2",
+    internalName: "lin",
+    description: "linear translations of (y,-x) pixels",
+    value: "y,-x",
+  },
+  {
+    label: "a_3",
+    internalName: "lin",
+    description: "linear translations of (-x,-y) pixels",
+    value: "-x,-y",
+  },
+  {
+    label: "a_4",
+    internalName: "lin",
+    description: "linear translations of (-y,x) pixels",
+    value: "-y,x",
   },
 ];
+const groups: Array<Group> = [
+  {
+    label: "G1",
+    description:
+      "Group formed by rotations around the centre of the image by integer multiples of 90 degrees and a symmetry on the y-axis",
+    permutants: [permutants[0], permutants[1], permutants[2], permutants[3]],
+    unknowns: [],
+  },
+  {
+    label: "G2",
+    description:
+      "Gruppo formato dalle rotazioni intorno al centro dell'immagine per multipli interi di 90 gradi",
+    permutants: [permutants[4], permutants[5], permutants[6], permutants[7]],
+    unknowns: [
+      { label: "x", value: "0" },
+      { label: "y", value: "0" },
+    ],
+  },
+];
+
+const group = ref(false);
+const groupSelected = ref<Group>({
+  label: "",
+  description: "",
+  permutants: [],
+  unknowns: [],
+});
 
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 };
 
-const selectGroup = (group: string) => {
+const selectGroup = (group: Group) => {
   groupSelected.value = group;
-  listOfPermutantsByGroup.value = [];
-  listOfPermutantSelected.value = [];
-  if (group == "First") {
-    listOfPermutantsByGroup.value.push(listOfPermutants[0]);
-    listOfPermutantsByGroup.value.push(listOfPermutants[1]);
-    listOfPermutantsByGroup.value.push(listOfPermutants[2]);
-  } else if (group == "Second") {
-    listOfPermutantsByGroup.value.push(listOfPermutants[0]);
-    listOfPermutantsByGroup.value.push(listOfPermutants[2]);
-    listOfPermutantsByGroup.value.push(listOfPermutants[3]);
-  }
-};
-
-const selectPermutant = (permutant: Permutant) => {
-  listOfPermutantSelected.value.push({
-    label: "a_" + (listOfPermutantSelected.value?.length + 1),
-    description: permutant.description,
-    rules: permutant.rules,
-    internalName: permutant.internalName,
-  });
-};
-
-const removePermutant = (label: string | undefined) => {
-  listOfPermutantSelected.value = listOfPermutantSelected.value.filter(
-    (permutant) => permutant.label != label
-  );
-  listOfPermutantSelected.value.forEach((permutant, index) => {
-    permutant.label = "a_" + (index + 1);
-  });
 };
 
 const download_image = async () => {
@@ -332,11 +335,13 @@ const showGeneo = () => {
           testImgMatrix,
           testImg,
           canvasSize.value,
-          listOfPermutantSelected.value
+          groupSelected.value.permutants,
+          groupSelected.value.unknowns
         );
         var geneoMatrix = polynomialUtils.evaluate(polynomial.value);
         console.log(geneoMatrix);
       } catch (e) {
+        console.log(e);
         return;
       }
 
@@ -440,7 +445,7 @@ watch(
 );
 var timer = 0;
 watch(
-  [polynomial, listOfPermutantSelected],
+  [polynomial, groupSelected],
   () => {
     // delay the execution of the function showGeneo
     // to avoid the execution of the function when the user is typing
@@ -449,6 +454,7 @@ watch(
       clearTimeout(timer);
     }
     timer = setTimeout(() => {
+      console.log("show geneo");
       showGeneo();
     }, 200);
   },

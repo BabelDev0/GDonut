@@ -8,6 +8,7 @@ export class PolynomialUtils {
     canvas: HTMLImageElement;
     canvasSize: number;
     permutantSelected: Permutant[];
+    unknowns: Array<{ label: string, value: string }>;
     Mimg: number = 255;
     rankPoly: number = 0;
 
@@ -15,12 +16,14 @@ export class PolynomialUtils {
         image: Matrix,
         canvas: HTMLImageElement,
         canvasSize: number,
-        permutantSelected: Permutant[]
+        permutantSelected: Permutant[],
+        unknowns: Array<{ label: string, value: string }>
     ) {
         this.image = image;
         this.canvas = canvas;
         this.canvasSize = canvasSize;
         this.permutantSelected = permutantSelected;
+        this.unknowns = unknowns;
     }
 
     /**
@@ -550,7 +553,11 @@ export class PolynomialUtils {
                 case "lin":
                     var values = [0];
                     if (permutant.value) {
-                        values = permutant.value.split(",").map(Number);
+                        var tempPermVal = permutant.value;
+                        this.unknowns.forEach((unknown) => {
+                            tempPermVal = tempPermVal.replace(unknown.label, unknown.value);
+                        });
+                        values = tempPermVal.split(",").map(Number);
                     }
                     parser.set(permutant.label,
                         this.spaceMoviment(values[0], values[1]));
