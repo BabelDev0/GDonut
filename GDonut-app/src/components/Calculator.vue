@@ -38,7 +38,7 @@
       :width="drawerSize"
     >
       <!-- DRAWER CONTENT -->
-      <!-- GROUP AND PERMUTANT -->
+      <!-- GROUP -->
       <div class="full-width row justify-start q-py-xs">
         <!-- select group -->
         <q-fab
@@ -60,6 +60,17 @@
             :key="item.label"
           />
         </q-fab>
+        <div v-if="groupSelected.label !== ''">
+          <q-btn
+            flat
+            round
+            size="md"
+            color="primary"
+            icon="info"
+            class="q-my-sm"
+            @click="groupDialog = true"
+          />
+        </div>
       </div>
       <!-- POLY -->
       <div class="full-width row justify-center">
@@ -78,13 +89,12 @@
         >
         </math-field>
       </div>
-      <!-- PERMUTANTS -->
       <!-- UNKNOWNS -->
       <div class="full-width row justify-center q-pt-md">
         <q-input
           v-for="unknown in groupSelected.unknowns"
           square
-          class="w-auto q-mx-xs"
+          class="w-auto q-mx-xs q-my-xs"
           outlined
           v-model="unknown.value"
           :key="unknown.label"
@@ -96,7 +106,7 @@
           </template>
         </q-input>
       </div>
-      <!-- LIST OF PERMUTANTS -->
+      <!-- PERMUTANTS -->
       <div class="full-width row justify-center q-pt-md">
         <q-input
           v-for="permutant in groupSelected.permutants"
@@ -120,34 +130,46 @@
     <q-page-container>
       <!-- GENEO CANVAS -->
       <div class="full-width row justify-center">
-        <div class="column justify-start q-mr-lg">
-          <canvas
-            class="q-mb-xs"
-            id="canvasGeneo"
-            :width="canvasSize"
-            :height="canvasSize"
-            style="border: 1px solid #bb2e29"
-          >
-            Your browser does not support the HTML5 canvas tag.</canvas
-          >
-          <div class="row justify-start">
-            <small>{{ canvasSize }} X {{ canvasSize }} </small>
-          </div>
-          <div class="row justify-end">
-            <q-btn
-              push
-              color="primary"
-              label="Print"
-              size="13px"
-              @click="download_image()"
-            />
+        <div class="column justify-start q-mt-md">
+          <div class="">
+            <div class="row">
+              <!-- CANVAS COMPONENT -->
+              <div class="col-11">
+                <canvas
+                  class="q-mb-xs"
+                  id="canvasGeneo"
+                  :width="canvasSize"
+                  :height="canvasSize"
+                  style="border: 1px solid #bb2e29"
+                >
+                  Your browser does not support the HTML5 canvas tag.
+                </canvas>
+              </div>
+              <!-- PRINTER BUTTON -->
+              <div class="col-1">
+                <div class="q-my-sm q-ml-sm">
+                  <q-btn
+                    round
+                    size="sm"
+                    color="primary"
+                    icon="print"
+                    @click="download_image()"
+                  />
+                </div>
+              </div>
+            </div>
+            <!-- CANVAS SIZE LABEL -->
+            <div class="row justify-start">
+              <small>{{ canvasSize }} X {{ canvasSize }} </small>
+            </div>
           </div>
         </div>
       </div>
       <!-- TEST CANVAS -->
-      <div class="full-width row justify-center">
+      <div class="full-width row justify-center q-mt-sm">
         <div class="">
           <div class="row">
+            <!-- CANVAS COMPONENT -->
             <div class="col-11">
               <canvas
                 class="q-mt-md q-mb-xs"
@@ -159,6 +181,7 @@
                 Your browser does not support the HTML5 canvas tag.
               </canvas>
             </div>
+            <!-- ACTIONS BUTTONS -->
             <div class="col-1 q-mt-md">
               <div class="q-my-sm q-ml-sm">
                 <q-btn
@@ -190,12 +213,205 @@
               </div>
             </div>
           </div>
+          <!-- CANVAS SIZE LABEL -->
           <div class="row justify-start">
             <small>{{ canvasSize }} X {{ canvasSize }} </small>
           </div>
         </div>
       </div>
     </q-page-container>
+
+    <q-dialog v-model="groupDialog">
+      <q-card>
+        <q-toolbar>
+          <q-toolbar-title
+            ><span class="text-weight-bold">Group : </span>
+            {{ groupSelected.label }}</q-toolbar-title
+          >
+
+          <q-btn
+            flat
+            round
+            dense
+            icon="close"
+            v-close-popup
+            @click="groupStep = 1"
+          />
+        </q-toolbar>
+
+        <div>
+          <q-stepper v-model="groupStep" ref="stepper" color="primary" animated>
+            <q-step
+              :name="1"
+              title="Group Info"
+              icon="settings"
+              :done="groupStep > 1"
+            >
+              <q-card-section>
+                <span class="text-weight-bold">Description : </span>
+                <q-input
+                  square
+                  v-model="groupSelected.description"
+                  autogrow
+                  class="full-width q-mt-sm q-mb-md"
+                  outlined
+                  :readonly="true"
+                >
+                  <template v-slot:prepend>
+                    <q-chip color="primary" text-color="white" icon="calculate">
+                      {{ groupSelected.label }}
+                    </q-chip>
+                  </template>
+                </q-input>
+
+                <span class="text-weight-bold">Permutants : </span>
+                <div class="full-width row justify-center q-mt-sm">
+                  <q-input
+                    v-for="permutant in groupSelected.permutants"
+                    square
+                    class="full-width q-mb-sm"
+                    outlined
+                    v-model="permutant.description"
+                    autogrow
+                    :key="permutant.label"
+                    :readonly="true"
+                  >
+                    <template v-slot:prepend>
+                      <q-chip
+                        color="primary"
+                        text-color="white"
+                        icon="calculate"
+                      >
+                        {{ permutant.label }}
+                      </q-chip>
+                    </template>
+                  </q-input>
+                </div>
+              </q-card-section>
+            </q-step>
+
+            <q-step
+              :name="2"
+              title="Write polynomial"
+              caption="Optional"
+              icon="create_new_folder"
+              :done="groupStep > 2"
+            >
+              <div class="full-width row justify-center q-pa-lg">
+                <span class="text-weight-bold q-mb-lg">
+                  Write your polynomial in the input box as shown below
+                </span>
+                <math-field
+                  id="formulaExample"
+                  class="full-width"
+                  style="
+                    font-size: 22px;
+                    padding: 5px;
+                    border: 1px solid rgba(0, 0, 0, 0.3);
+                    outline-color: #bb2e29;
+                    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+                  "
+                  readonly="true"
+                  keypress-sound="none"
+                  plonk-sound="none"
+                >
+                  {{ polynomialTest }}
+                </math-field>
+                <ul>
+                  <li class="q-mt-sm">
+                    <span class="text-weight-bold">
+                      use \sigma_n as the n-th elementary symmetric polynomial
+                      and h_n
+                    </span>
+                  </li>
+                  <li class="q-mt-sm">
+                    <span class="text-weight-bold">
+                      use h_n as the n-th permutant of the group
+                    </span>
+                  </li>
+                  <li class="q-mt-sm">
+                    <span class="text-weight-bold">
+                      remember not to omit any operand such as the * in
+                      multiplication and if you want to perform division
+                      multiply by the reciprocal
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </q-step>
+
+            <q-step
+              :name="3"
+              title="Write polynomial"
+              caption="Optional"
+              icon="create_new_folder"
+              :done="groupStep > 2"
+            >
+              <div class="full-width row justify-center q-pa-lg">
+                <span class="text-weight-bold q-mb-lg">
+                  Write your polynomial in the input box as shown below
+                </span>
+                <math-field
+                  id="formulaExample"
+                  class="full-width"
+                  style="
+                    font-size: 22px;
+                    padding: 5px;
+                    border: 1px solid rgba(0, 0, 0, 0.3);
+                    outline-color: #bb2e29;
+                    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+                  "
+                  readonly="true"
+                  keypress-sound="none"
+                  plonk-sound="none"
+                >
+                  {{ polynomialTest }}
+                </math-field>
+                <ul>
+                  <li class="q-mt-sm">
+                    <span class="text-weight-bold">
+                      use \sigma_n as the n-th elementary symmetric polynomial
+                      and h_n
+                    </span>
+                  </li>
+                  <li class="q-mt-sm">
+                    <span class="text-weight-bold">
+                      use h_n as the n-th permutant of the group
+                    </span>
+                  </li>
+                  <li class="q-mt-sm">
+                    <span class="text-weight-bold">
+                      remember not to omit any operand such as the * in
+                      multiplication and if you want to perform division
+                      multiply by the reciprocal
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </q-step>
+
+            <template v-slot:navigation>
+              <q-stepper-navigation>
+                <q-btn
+                  v-if="groupStep < 3"
+                  @click="groupStep++"
+                  color="primary"
+                  :label="groupStep === 4 ? 'Finish' : 'Continue'"
+                />
+                <q-btn
+                  v-if="groupStep > 1"
+                  flat
+                  color="primary"
+                  @click="groupStep--"
+                  label="Back"
+                  class="q-ml-sm"
+                />
+              </q-stepper-navigation>
+            </template>
+          </q-stepper>
+        </div>
+      </q-card>
+    </q-dialog>
   </q-layout>
 </template>
 
@@ -218,52 +434,54 @@ const drawerSize = ref(500);
 const filePicker = ref(null);
 const leftDrawerOpen = ref(true);
 const polynomial = ref<string>("");
+const polynomialTest = ref<string>("");
+const stateWrite = ref(false);
 
 const permutants: Array<Permutant> = [
   {
-    label: "a_1",
+    label: "h_1",
     internalName: "rot",
     description: "rotations around the centre of the image by 90 degrees",
     value: "90",
   },
   {
-    label: "a_2",
+    label: "h_2",
     internalName: "rot",
     description: "rotations around the centre of the image by -90 degrees",
     value: "-90",
   },
   {
-    label: "a_3",
+    label: "h_3",
     internalName: "rot",
     description: "rotations around the centre of the image by 180 degrees",
     value: "180",
   },
   {
-    label: "a_4",
+    label: "h_4",
     internalName: "rot",
     description: "rotations around the centre of the image by 360 degrees",
     value: "360",
   },
   {
-    label: "a_1",
+    label: "h_1",
     internalName: "lin",
     description: "linear translations of (x,y) pixels",
     value: "x,y",
   },
   {
-    label: "a_2",
+    label: "h_2",
     internalName: "lin",
     description: "linear translations of (y,-x) pixels",
     value: "y,-x",
   },
   {
-    label: "a_3",
+    label: "h_3",
     internalName: "lin",
     description: "linear translations of (-x,-y) pixels",
     value: "-x,-y",
   },
   {
-    label: "a_4",
+    label: "h_4",
     internalName: "lin",
     description: "linear translations of (-y,x) pixels",
     value: "-y,x",
@@ -280,7 +498,7 @@ const groups: Array<Group> = [
   {
     label: "G2",
     description:
-      "Gruppo formato dalle rotazioni intorno al centro dell'immagine per multipli interi di 90 gradi",
+      "Group formed by rotations around the centre of the image by integer multiples of 90 degrees",
     permutants: [permutants[4], permutants[5], permutants[6], permutants[7]],
     unknowns: [
       { label: "x", value: "0" },
@@ -290,6 +508,8 @@ const groups: Array<Group> = [
 ];
 
 const group = ref(false);
+const groupDialog = ref(false);
+const groupStep = ref(1);
 const groupSelected = ref<Group>({
   label: "",
   description: "",
@@ -422,11 +642,40 @@ const initTestImage = (type: string) => {
 onMounted(() => {
   canvasOriginal = document.getElementById("canvasOriginal");
   canvasGeneo = document.getElementById("canvasGeneo");
-  canvasSize.value = 300;
+  canvasSize.value = 350;
   if (document && document.getElementById("formula")) {
     document.getElementById("formula")!.addEventListener("input", (ev: any) => {
       polynomial.value = ev.target.value;
     });
+  }
+});
+
+const writeTestPoly = () => {
+  const example = "-\\sigma_1(h_1,h_2)+3\\cdot\\sigma_2(h_1,h_2)^2";
+  var i = 0;
+  polynomialTest.value = "";
+  var interval = setInterval(() => {
+    if (!stateWrite.value) {
+      clearInterval(interval);
+    }
+    polynomialTest.value += example[i];
+    i++;
+
+    if (i >= example.length) {
+      clearInterval(interval);
+      setTimeout(() => {
+        writeTestPoly();
+      }, 2000);
+    }
+  }, 200);
+};
+
+watch(groupStep, () => {
+  if (groupStep.value === 2) {
+    stateWrite.value = true;
+    writeTestPoly();
+  } else {
+    stateWrite.value = false;
   }
 });
 
@@ -444,6 +693,7 @@ watch(
   },
   { immediate: true }
 );
+
 var timer = 0;
 watch(
   [polynomial, groupSelected],
