@@ -7,7 +7,7 @@ export class PolynomialUtils {
     image: Matrix;
     canvas: HTMLImageElement;
     canvasSize: number;
-    permutantSelected: Permutant[];
+    permutants: Permutant[];
     unknowns: Array<{ label: string, value: string }>;
     Mimg: number = 255;
     rankPoly: number = 0;
@@ -16,13 +16,13 @@ export class PolynomialUtils {
         image: Matrix,
         canvas: HTMLImageElement,
         canvasSize: number,
-        permutantSelected: Permutant[],
+        permutants: Permutant[],
         unknowns: Array<{ label: string, value: string }>
     ) {
         this.image = image;
         this.canvas = canvas;
         this.canvasSize = canvasSize;
-        this.permutantSelected = permutantSelected;
+        this.permutants = permutants;
         this.unknowns = unknowns;
     }
 
@@ -319,7 +319,7 @@ export class PolynomialUtils {
         ply = ply.replace(/\\left\(/g, "(");
         ply = ply.replace(/\\right\)/g, ")");
         // replace all a_1,...,a_n 
-        ply = ply.replace(/\(a_\d+(,a_\d+)*\)/g, "");
+        ply = ply.replace(/\(h_\d+(,h_\d+)*\)/g, "");
         // replace \sigma_{n} to s(n)
         ply = ply.replace(/\\sigma_(\d+)/g, "s($1)");
         ply = ply.replace(/\\sigma_\{(\d+)\}/g, "s($1)");
@@ -431,7 +431,7 @@ export class PolynomialUtils {
         console.log("latex " + polynomial);
 
         var ply = polynomial;
-        var regex = /\\sigma_\{?\d+\}?\((a_\d+(,a_\d+)*)\)/g;
+        var regex = /\\sigma_\{?\d+\}?\((h_\d+(,h_\d+)*)\)/g;
         var match = regex.exec(polynomial);
         var args = match ? match[1] : "";
         this.setRankPoly(args);
@@ -446,7 +446,7 @@ export class PolynomialUtils {
     setRankPoly = (args: string) => {
         var n = 0;
         var match = null;
-        var regex = /a_(\d+)/g;
+        var regex = /h_(\d+)/g;
         while ((match = regex.exec(args)) != null) {
             n = Math.max(n, Number(match[1]));
         }
@@ -544,7 +544,7 @@ export class PolynomialUtils {
         const parser = math.parser();
 
         // parsing permutant
-        this.permutantSelected.forEach((permutant) => {
+        this.permutants.forEach((permutant) => {
             switch (permutant.internalName) {
                 case "ide":
                     parser.set(permutant.label,
