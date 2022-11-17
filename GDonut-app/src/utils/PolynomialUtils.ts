@@ -554,9 +554,12 @@ export class PolynomialUtils {
                     var values = [0];
                     if (permutant.value) {
                         var tempPermVal = permutant.value;
-                        this.unknowns.forEach((unknown) => {
-                            tempPermVal = tempPermVal.replace(unknown.label, unknown.value);
-                        });
+                        const x = this.unknowns.find((unknown) => unknown.label === "x");
+                        const y = this.unknowns.find((unknown) => unknown.label === "y");
+                        if (x && y) {
+                            tempPermVal = tempPermVal.replace("x", x.value);
+                            tempPermVal = tempPermVal.replace("y", y.value);
+                        }
                         values = tempPermVal.split(",").map(Number);
                     }
                     parser.set(permutant.label,
