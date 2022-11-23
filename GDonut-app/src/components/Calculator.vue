@@ -124,6 +124,35 @@
           </template>
         </q-input>
       </div>
+      <!-- NORMALIZE -->
+      <div
+        v-if="groupSelected.label !== ''"
+        class="full-width row justify-center q-pt-md"
+      >
+        <q-input
+          square
+          class="w-auto q-mx-xs q-my-xs"
+          outlined
+          v-model="constToNormilize"
+        >
+          <template v-slot:prepend>
+            <q-chip color="primary" text-color="white" square>
+              Normalize by
+            </q-chip>
+          </template>
+        </q-input>
+        <div class="col-1">
+          <div class="q-mt-md q-ml-sm">
+            <q-btn
+              round
+              size="sm"
+              color="primary"
+              icon="restore"
+              @click="showGeneo()"
+            />
+          </div>
+        </div>
+      </div>
     </q-drawer>
 
     <!-- MAIN -->
@@ -248,44 +277,61 @@
               :done="groupStep > 1"
             >
               <q-card-section>
-                <span class="text-weight-bold">Description : </span>
-                <q-input
-                  square
-                  v-model="groupSelected.description"
-                  autogrow
-                  class="full-width q-mt-sm q-mb-md"
-                  outlined
-                  :readonly="true"
-                >
-                  <template v-slot:prepend>
-                    <q-chip color="primary" text-color="white" icon="calculate">
-                      {{ groupSelected.label }}
-                    </q-chip>
-                  </template>
-                </q-input>
-
-                <span class="text-weight-bold">Permutants : </span>
-                <div class="full-width row justify-center q-mt-sm">
-                  <q-input
-                    v-for="permutant in groupSelected.permutants"
-                    square
-                    class="full-width q-mb-sm"
-                    outlined
-                    v-model="permutant.description"
-                    autogrow
-                    :key="permutant.label"
-                    :readonly="true"
-                  >
-                    <template v-slot:prepend>
-                      <q-chip
-                        color="primary"
-                        text-color="white"
-                        icon="calculate"
-                      >
-                        {{ permutant.label }}
-                      </q-chip>
-                    </template>
-                  </q-input>
+                <div class="full-width text-center">
+                  <h6 class="q-mt-xs q-mb-lg">
+                    {{ groupSelected.description }}
+                  </h6>
+                </div>
+                <div v-if="groupSelected.unknowns.length > 0">
+                  <p>
+                    <span class="text-weight-bold">Unknowns : </span>assigns the
+                    variables to be used by permutants
+                  </p>
+                  <div class="full-width row justify-center">
+                    <q-input
+                      v-for="unknown in groupSelected.unknowns"
+                      square
+                      class="w-auto q-mx-xs q-mb-sm"
+                      outlined
+                      v-model="unknown.value"
+                      :key="unknown.label"
+                      readonly
+                    >
+                      <template v-slot:prepend>
+                        <q-chip color="primary" text-color="white" square>
+                          {{ unknown.label }}
+                        </q-chip>
+                      </template>
+                    </q-input>
+                  </div>
+                </div>
+                <div class="q-mt-md">
+                  <p>
+                    <span class="text-weight-bold">Permutants : </span>list of
+                    permutants belonging to the group
+                  </p>
+                  <div class="full-width row justify-center">
+                    <q-input
+                      v-for="permutant in groupSelected.permutants"
+                      square
+                      class="full-width q-mb-sm"
+                      outlined
+                      v-model="permutant.description"
+                      autogrow
+                      :key="permutant.label"
+                      :readonly="true"
+                    >
+                      <template v-slot:prepend>
+                        <q-chip
+                          color="primary"
+                          text-color="white"
+                          icon="calculate"
+                        >
+                          {{ permutant.label }}
+                        </q-chip>
+                      </template>
+                    </q-input>
+                  </div>
                 </div>
               </q-card-section>
             </q-step>
@@ -293,14 +339,13 @@
             <q-step
               :name="2"
               title="Write polynomial"
-              caption="Optional"
               icon="create_new_folder"
               :done="groupStep > 2"
             >
               <div class="full-width row justify-center q-pa-lg">
-                <span class="text-weight-bold q-mb-lg">
-                  Write your polynomial in the input box as shown below
-                </span>
+                <h6 class="q-mt-xs q-mb-md text-center">
+                  Write your polynomial in the input box
+                </h6>
                 <math-field
                   id="formulaExample"
                   class="full-width"
@@ -320,73 +365,82 @@
                 <ul>
                   <li class="q-mt-sm">
                     <span class="text-weight-bold">
-                      use \sigma_n as the n-th elementary symmetric polynomial
-                      and h_n
+                      <span style="color: #bb2e29">Use</span>
+                      \sigma_n as the n-th elementary symmetric polynomial
                     </span>
                   </li>
                   <li class="q-mt-sm">
                     <span class="text-weight-bold">
-                      use h_n as the n-th permutant of the group
+                      <span style="color: #bb2e29">Use</span>
+                      a_n as the n-th permutant cognugate with the data function
                     </span>
                   </li>
                   <li class="q-mt-sm">
                     <span class="text-weight-bold">
-                      remember not to omit any operand such as the * in
-                      multiplication and if you want to perform division
-                      multiply by the reciprocal
+                      <span style="color: #bb2e29">Note</span>
+                      not to omit any operand such as the * in multiplication
+                      and if you want to perform division multiply by the
+                      reciprocal
+                    </span>
+                  </li>
+                  <li class="q-mt-sm">
+                    <span class="text-weight-bold">
+                      <span style="color: #bb2e29">Note</span>
+                      if you want to perform division multiply by the reciprocal
                     </span>
                   </li>
                 </ul>
+                <p class="text-center text-weight-bold" style="color: #bb2e29">
+                  if the polynomial is formed incorrectly the geneo canvas will
+                  turn white
+                </p>
               </div>
             </q-step>
 
             <q-step
               :name="3"
-              title="Write polynomial"
-              caption="Optional"
+              title="Normalize"
               icon="create_new_folder"
               :done="groupStep > 2"
             >
               <div class="full-width row justify-center q-pa-lg">
-                <span class="text-weight-bold q-mb-lg">
-                  Write your polynomial in the input box as shown below
-                </span>
-                <math-field
-                  id="formulaExample"
-                  class="full-width"
-                  style="
-                    font-size: 22px;
-                    padding: 5px;
-                    border: 1px solid rgba(0, 0, 0, 0.3);
-                    outline-color: #bb2e29;
-                    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
-                  "
-                  readonly="true"
-                  keypress-sound="none"
-                  plonk-sound="none"
-                >
-                  {{ polynomialTest }}
-                </math-field>
-                <ul>
-                  <li class="q-mt-sm">
-                    <span class="text-weight-bold">
-                      use \sigma_n as the n-th elementary symmetric polynomial
-                      and h_n
-                    </span>
-                  </li>
-                  <li class="q-mt-sm">
-                    <span class="text-weight-bold">
-                      use h_n as the n-th permutant of the group
-                    </span>
-                  </li>
-                  <li class="q-mt-sm">
-                    <span class="text-weight-bold">
-                      remember not to omit any operand such as the * in
-                      multiplication and if you want to perform division
-                      multiply by the reciprocal
-                    </span>
-                  </li>
-                </ul>
+                <div>
+                  <h6 class="q-mt-xs q-mb-xs text-center">Normalize</h6>
+
+                  <div class="full-width row justify-center q-mt-md">
+                    <q-input
+                      square
+                      class="w-auto q-mx-xs q-my-xs"
+                      outlined
+                      v-model="constToNormilize"
+                      readonly
+                    >
+                      <template v-slot:prepend>
+                        <q-chip color="primary" text-color="white" square>
+                          Normalize by
+                        </q-chip>
+                      </template>
+                    </q-input>
+                    <div class="col-1">
+                      <div class="q-mt-md q-ml-sm">
+                        <q-btn
+                          round
+                          size="sm"
+                          color="primary"
+                          icon="restore"
+                          @click=""
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <p class="text-center q-mt-md">
+                    in order to show the geneo we apply a normalisation
+                    operation, it is possible to vary this value to obtain
+                    different views. The button on the right reapplies the
+                    default normalisation constant
+                  </p>
+                </div>
               </div>
             </q-step>
 
@@ -429,6 +483,9 @@ var canvasGeneo: any;
 var canvasOriginal: any;
 var testImg = new Image();
 var testImgMatrix: Matrix;
+var polynomialUtils: PolynomialUtils;
+var geneoMatrix: Matrix | null;
+var afterGeneo = true;
 const canvasSize = ref(0);
 const drawerSize = ref(500);
 const filePicker = ref(null);
@@ -436,52 +493,53 @@ const leftDrawerOpen = ref(true);
 const polynomial = ref<string>("");
 const polynomialTest = ref<string>("");
 const stateWrite = ref(false);
+const constToNormilize = ref(0);
 
 const permutants: Array<Permutant> = [
   {
-    label: "h_1",
+    label: "a_1",
     internalName: "rot",
     description: "rotations around the centre of the image by 90 degrees",
     value: "90",
   },
   {
-    label: "h_2",
+    label: "a_2",
     internalName: "rot",
     description: "rotations around the centre of the image by -90 degrees",
     value: "-90",
   },
   {
-    label: "h_3",
+    label: "a_3",
     internalName: "rot",
     description: "rotations around the centre of the image by 180 degrees",
     value: "180",
   },
   {
-    label: "h_4",
+    label: "a_4",
     internalName: "rot",
     description: "rotations around the centre of the image by 360 degrees",
     value: "360",
   },
   {
-    label: "h_1",
+    label: "a_1",
     internalName: "lin",
     description: "linear translations of (x,y) pixels",
     value: "x,y",
   },
   {
-    label: "h_2",
+    label: "a_2",
     internalName: "lin",
     description: "linear translations of (y,-x) pixels",
     value: "y,-x",
   },
   {
-    label: "h_3",
+    label: "a_3",
     internalName: "lin",
     description: "linear translations of (-x,-y) pixels",
     value: "-x,-y",
   },
   {
-    label: "h_4",
+    label: "a_4",
     internalName: "lin",
     description: "linear translations of (-y,x) pixels",
     value: "-y,x",
@@ -548,33 +606,44 @@ const download_image = async () => {
 };
 
 const showGeneo = () => {
-  if (testImg) {
-    if (polynomial.value != "") {
-      try {
-        var polynomialUtils = new PolynomialUtils(
-          testImgMatrix,
-          testImg,
-          canvasSize.value,
-          groupSelected.value.permutants,
-          groupSelected.value.unknowns
-        );
-        var geneoMatrix = polynomialUtils.evaluate(polynomial.value);
-        console.log(geneoMatrix);
-      } catch (e) {
-        var ctx = canvasGeneo.getContext("2d");
-        ctx.clearRect(0, 0, canvasSize.value, canvasSize.value);
-        return;
-      }
+  if (testImg && testImgMatrix) {
+    if (groupSelected.value.label !== "") {
+      if (polynomial.value != "") {
+        try {
+          polynomialUtils = new PolynomialUtils(
+            testImgMatrix,
+            testImg,
+            canvasSize.value,
+            groupSelected.value.permutants,
+            groupSelected.value.unknowns
+          );
+          geneoMatrix = polynomialUtils.evaluate(polynomial.value);
+          console.log("Geneo", geneoMatrix);
+        } catch (e) {
+          var ctx = canvasGeneo.getContext("2d");
+          ctx.clearRect(0, 0, canvasSize.value, canvasSize.value);
+          return;
+        }
 
-      if (geneoMatrix!) {
-        CanvasUtils.drawMatrix(geneoMatrix, canvasGeneo);
+        if (geneoMatrix) {
+          var geneoMatrixNormalized = polynomialUtils.normalizeGeneo(
+            geneoMatrix,
+            -1
+          );
+          afterGeneo = true;
+          constToNormilize.value = polynomialUtils.constToNormilize;
+          console.log("Normalized", geneoMatrixNormalized);
+          CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
+        }
+      } else {
+        var ctx = canvasGeneo.getContext("2d");
+        ctx.clearRect(0, 0, canvasGeneo.width, canvasGeneo.height);
       }
     } else {
-      var ctx = canvasGeneo.getContext("2d", { willReadFrequently: true });
-      ctx.clearRect(0, 0, canvasGeneo.width, canvasGeneo.height);
+      console.log("Group not selected");
     }
   } else {
-    console.log("image dosen't exist");
+    console.log("Test image not exist");
   }
 };
 
@@ -651,7 +720,7 @@ onMounted(() => {
 });
 
 const writeTestPoly = () => {
-  const example = "-\\sigma_1(h_1,h_2)+3\\cdot\\sigma_2(h_1,h_2)^2";
+  const example = "-\\sigma_1(a_1,a_2)+3\\cdot\\sigma_2(a_1,a_2)^2";
   var i = 0;
   polynomialTest.value = "";
   var interval = setInterval(() => {
@@ -693,6 +762,21 @@ watch(
   },
   { immediate: true }
 );
+
+watch(constToNormilize, () => {
+  if (!afterGeneo) {
+    if (geneoMatrix) {
+      var geneoMatrixNormalized = polynomialUtils.normalizeGeneo(
+        geneoMatrix,
+        +constToNormilize.value
+      );
+
+      CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
+    }
+  } else {
+    afterGeneo = false;
+  }
+});
 
 var timer = 0;
 watch(
