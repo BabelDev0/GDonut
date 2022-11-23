@@ -133,7 +133,7 @@
           square
           class="w-auto q-mx-xs q-my-xs"
           outlined
-          v-model="constToNormilize"
+          v-model="constToNormalize"
         >
           <template v-slot:prepend>
             <q-chip color="primary" text-color="white" square>
@@ -412,7 +412,7 @@
                       square
                       class="w-auto q-mx-xs q-my-xs"
                       outlined
-                      v-model="constToNormilize"
+                      v-model="constToNormalize"
                       readonly
                     >
                       <template v-slot:prepend>
@@ -493,7 +493,7 @@ const leftDrawerOpen = ref(true);
 const polynomial = ref<string>("");
 const polynomialTest = ref<string>("");
 const stateWrite = ref(false);
-const constToNormilize = ref(0);
+const constToNormalize = ref(0);
 
 const permutants: Array<Permutant> = [
   {
@@ -622,6 +622,7 @@ const showGeneo = () => {
         } catch (e) {
           var ctx = canvasGeneo.getContext("2d");
           ctx.clearRect(0, 0, canvasSize.value, canvasSize.value);
+          console.log(e);
           return;
         }
 
@@ -631,7 +632,7 @@ const showGeneo = () => {
             -1
           );
           afterGeneo = true;
-          constToNormilize.value = polynomialUtils.constToNormilize;
+          constToNormalize.value = polynomialUtils.constToNormalize;
           console.log("Normalized", geneoMatrixNormalized);
           CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
         }
@@ -762,12 +763,12 @@ watch(
   { immediate: true }
 );
 
-watch(constToNormilize, () => {
+watch(constToNormalize, () => {
   if (!afterGeneo) {
     if (geneoMatrix) {
       var geneoMatrixNormalized = polynomialUtils.normalizeGeneo(
         geneoMatrix,
-        +constToNormilize.value
+        +constToNormalize.value
       );
 
       CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
