@@ -246,7 +246,18 @@
           <div class="row justify-start">
             <small>{{ canvasSize }} X {{ canvasSize }} </small>
           </div>
+          <q-btn
+            class="absolute-bottom-right q-ma-md"
+            round
+            size="md"
+            color="primary"
+            icon="refresh"
+            @click="reload()"
+          />
         </div>
+      </div>
+      <div class="absolute">
+        <div class="full-width row justify-end"></div>
       </div>
     </q-page-container>
 
@@ -706,6 +717,10 @@ const initTestImage = (type: string) => {
   } else {
     console.log("image dosen't exist");
   }
+};
+
+const reload = () => {
+  window.location.reload();
 };
 
 onMounted(() => {
