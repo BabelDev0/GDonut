@@ -11,7 +11,7 @@ export class PolynomialUtils {
     unknowns: Array<{ label: string, value: string }>;
     Mimg: number = 255;
     rankPoly: number = 0;
-    constToNormilize: number = 0;
+    constToNormalize: number = 0;
 
     constructor(
         image: Matrix,
@@ -293,6 +293,12 @@ export class PolynomialUtils {
      */
     eleSymPoly(rank: number, ...args: number[][]) {
         var size = args.length;
+        console.log("size: " + size);
+        console.log("rank: " + rank);
+        if (size < rank) {
+            console.log("The rank must be greater or equal to the size of the array");
+            return null;
+        }
         var nCr = this.binom(size, rank);
 
         var result: Matrix = Matrix.zeros(this.canvasSize, this.canvasSize * 4);
@@ -316,9 +322,6 @@ export class PolynomialUtils {
 
     LaTeXToPolyGen = (polynomial: string): string => {
         var ply = polynomial;
-        //replcace \left( and \right) with ( and )
-        ply = ply.replace(/\\left\(/g, "(");
-        ply = ply.replace(/\\right\)/g, ")");
         // replace all a_1,...,a_n 
         ply = ply.replace(/\(a_\d+(,a_\d+)*\)/g, "");
         // replace \sigma_{n} to s(n)
@@ -432,9 +435,23 @@ export class PolynomialUtils {
         console.log("latex " + polynomial);
 
         var ply = polynomial;
+        //replcace \left and \right with ""
+        ply = ply.replace(/\\left|\\right/g, "");
+
         var regex = /\\sigma_\{?\d+\}?\((a_\d+(,a_\d+)*)\)/g;
-        var match = regex.exec(polynomial);
-        var args = match ? match[1] : "";
+        // check if all the match[1] are the same
+        var match;
+        var args = "";
+        while ((match = regex.exec(ply)) != null) {
+            if (args == "") {
+                args = match[1];
+            }
+            else if (args != match[1]) {
+                throw "Error: the arguments of the sigma function are not the same";
+            }
+        }
+
+        console.log("args " + args);
         this.setRankPoly(args);
 
         ply = this.LaTeXToPolyGen(ply);
@@ -449,9 +466,9 @@ export class PolynomialUtils {
         var match = null;
         var regex = /a_(\d+)/g;
         while ((match = regex.exec(args)) != null) {
-            n = Math.max(n, Number(match[1]));
+            n++;
         }
-
+        console.log("rank" + n);
         this.rankPoly = n;
     }
 
@@ -463,12 +480,17 @@ export class PolynomialUtils {
 
     normalizeGeneo = (matrix: Matrix, constToNormalize: number): Matrix => {
         if (constToNormalize < 0) {
-            constToNormalize = 255 / matrix.max();
+            if (matrix.max() !== 0) {
+                constToNormalize = 255 / matrix.max();
+            }
+            else {
+                constToNormalize = 1;
+            }
         }
-        this.constToNormilize = constToNormalize;
-        console.log("Normalize by ", this.constToNormilize);
+        this.constToNormalize = constToNormalize;
+        console.log("Normalize by ", this.constToNormalize);
         var matrixNormalized = matrix.clone();
-        matrixNormalized = matrixNormalized.mul(this.constToNormilize);
+        matrixNormalized = matrixNormalized.mul(this.constToNormalize);
         return matrixNormalized;
     }
 
