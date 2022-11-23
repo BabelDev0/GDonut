@@ -486,6 +486,7 @@ var testImgMatrix: Matrix;
 var polynomialUtils: PolynomialUtils;
 var geneoMatrix: Matrix | null;
 var afterGeneo = true;
+var contextTransform: CanvasRenderingContext2D;
 const canvasSize = ref(0);
 const drawerSize = ref(500);
 const filePicker = ref(null);
@@ -652,6 +653,9 @@ const initTestImage = (type: string) => {
     var ctx = canvasOriginal.getContext("2d", { willReadFrequently: true });
     if (ctx) {
       ctx.clearRect(0, 0, canvasSize.value, canvasSize.value);
+      if (contextTransform) {
+        ctx = contextTransform;
+      }
 
       if (type !== "") {
         // move the context to the center of the canvas
@@ -673,6 +677,8 @@ const initTestImage = (type: string) => {
           -Math.floor(canvasSize.value / 2),
           -Math.floor(canvasSize.value / 2)
         );
+
+        contextTransform = ctx;
       }
       ctx.drawImage(
         testImg,
