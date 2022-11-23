@@ -11,6 +11,7 @@ export class PolynomialUtils {
     unknowns: Array<{ label: string, value: string }>;
     Mimg: number = 255;
     rankPoly: number = 0;
+    constToNormilize: number = 0;
 
     constructor(
         image: Matrix,
@@ -319,7 +320,7 @@ export class PolynomialUtils {
         ply = ply.replace(/\\left\(/g, "(");
         ply = ply.replace(/\\right\)/g, ")");
         // replace all a_1,...,a_n 
-        ply = ply.replace(/\(h_\d+(,h_\d+)*\)/g, "");
+        ply = ply.replace(/\(a_\d+(,a_\d+)*\)/g, "");
         // replace \sigma_{n} to s(n)
         ply = ply.replace(/\\sigma_(\d+)/g, "s($1)");
         ply = ply.replace(/\\sigma_\{(\d+)\}/g, "s($1)");
@@ -431,7 +432,7 @@ export class PolynomialUtils {
         console.log("latex " + polynomial);
 
         var ply = polynomial;
-        var regex = /\\sigma_\{?\d+\}?\((h_\d+(,h_\d+)*)\)/g;
+        var regex = /\\sigma_\{?\d+\}?\((a_\d+(,a_\d+)*)\)/g;
         var match = regex.exec(polynomial);
         var args = match ? match[1] : "";
         this.setRankPoly(args);
@@ -446,12 +447,29 @@ export class PolynomialUtils {
     setRankPoly = (args: string) => {
         var n = 0;
         var match = null;
-        var regex = /h_(\d+)/g;
+        var regex = /a_(\d+)/g;
         while ((match = regex.exec(args)) != null) {
             n = Math.max(n, Number(match[1]));
         }
 
         this.rankPoly = n;
+    }
+
+    setMimg = (matrix: Matrix) => {
+        var matrixAbs = matrix.abs();
+        this.Mimg = matrixAbs.max();
+        console.log("Mimg", this.Mimg);
+    }
+
+    normalizeGeneo = (matrix: Matrix, constToNormalize: number): Matrix => {
+        if (constToNormalize < 0) {
+            constToNormalize = 255 / matrix.max();
+        }
+        this.constToNormilize = constToNormalize;
+        console.log("Normalize by ", this.constToNormilize);
+        var matrixNormalized = matrix.clone();
+        matrixNormalized = matrixNormalized.mul(this.constToNormilize);
+        return matrixNormalized;
     }
 
     MCapitolOne = (n: number, ranks: number[]): number => {
@@ -630,12 +648,14 @@ export class PolynomialUtils {
         const parser = this.getParser();
         if (parser) {
             const poly = this.LaTeXToPoly(polynomialLatex);
-            const geneoConst = this.getGeneoConstant(polynomialLatex);
             var result = parser.evaluate(poly);
             var matrixResult = CanvasUtils.canvasToMatrix(result, this.canvasSize, this.canvasSize);
-            // if (geneoConst != 0) {
-            //     matrixResult = Matrix.divide(matrixResult, geneoConst);
-            // }
+            this.setMimg(matrixResult);
+
+            const geneoConst = this.getGeneoConstant(polynomialLatex);
+            if (geneoConst != 0) {
+                matrixResult = matrixResult.div(geneoConst);
+            }
             parser.clear();
             return matrixResult;
         }
