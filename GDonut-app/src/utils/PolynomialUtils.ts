@@ -115,7 +115,7 @@ export class PolynomialUtils {
             return result.to1DArray();
         }
         else {
-            console.log("ctxRotate is null");
+            throw "ctxRotate is null";
             return null;
         }
     };
@@ -184,7 +184,7 @@ export class PolynomialUtils {
             return result.to1DArray();
         }
         else {
-            console.log("ctxReflect is null");
+            throw "ctxReflect is null";
             return null;
         }
     };
@@ -293,10 +293,8 @@ export class PolynomialUtils {
      */
     eleSymPoly(rank: number, ...args: number[][]) {
         var size = args.length;
-        console.log("size: " + size);
-        console.log("rank: " + rank);
         if (size < rank) {
-            console.log("The rank must be greater or equal to the size of the array");
+            throw "The rank must be greater or equal to the size of the array";
             return null;
         }
         var nCr = this.binom(size, rank);
@@ -316,7 +314,6 @@ export class PolynomialUtils {
             }
             result = Matrix.add(result, step);
         }
-        // console.log("ele", result.to1DArray());
         return result.to1DArray();
     }
 
@@ -451,7 +448,6 @@ export class PolynomialUtils {
             }
         }
 
-        console.log("args " + args);
         this.setRankPoly(args);
 
         ply = this.LaTeXToPolyGen(ply);
@@ -468,14 +464,12 @@ export class PolynomialUtils {
         while ((match = regex.exec(args)) != null) {
             n++;
         }
-        console.log("rank" + n);
         this.rankPoly = n;
     }
 
     setMimg = (matrix: Matrix) => {
         var matrixAbs = matrix.abs();
         this.Mimg = matrixAbs.max();
-        console.log("Mimg", this.Mimg);
     }
 
     normalizeGeneo = (matrix: Matrix, constToNormalize: number): Matrix => {
@@ -488,7 +482,6 @@ export class PolynomialUtils {
             }
         }
         this.constToNormalize = constToNormalize;
-        console.log("Normalize by ", this.constToNormalize);
         var matrixNormalized = matrix.clone();
         matrixNormalized = matrixNormalized.mul(this.constToNormalize);
         return matrixNormalized;
