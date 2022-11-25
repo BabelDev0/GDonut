@@ -5,24 +5,44 @@
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
 
-        <q-toolbar-title>
-          <q-avatar square size="40px">
-            <img src="/logo.png" />
-          </q-avatar>
+        <q-toolbar-title class="absolute-center text-weight-medium">
           Calculator
         </q-toolbar-title>
+        <q-space />
         <!-- FILE PICKER -->
-        <div class="q-my-xs" style="max-width: 300px">
-          <q-file
-            outlined
-            v-model="filePicker"
-            label="select image"
-            label-color="white"
-          >
-            <template v-slot:prepend>
-              <q-icon name="cloud_upload" color="white" />
-            </template>
-          </q-file>
+        <q-file
+          class="standout-color-white"
+          outlined
+          v-model="filePicker"
+          label-color="white"
+          item-aligned
+          label="Select Image"
+          color="white"
+          style="min-width: 20em"
+          maxlength="1"
+        >
+          <template v-slot:prepend>
+            <q-icon name="cloud_upload" color="white" size="lg" />
+          </template>
+        </q-file>
+        <!-- RELOAD AND INFO BUTTON -->
+        <div class="row">
+          <q-btn
+            flat
+            round
+            size="lg"
+            color="white"
+            icon="info"
+            @click="reload()"
+          />
+          <q-btn
+            flat
+            round
+            size="lg"
+            color="white"
+            icon="refresh"
+            @click="reload()"
+          />
         </div>
       </q-toolbar>
     </q-header>
@@ -38,6 +58,7 @@
       :width="drawerSize"
     >
       <!-- DRAWER CONTENT -->
+
       <!-- GROUP -->
       <div class="full-width row justify-start q-py-xs">
         <!-- select group -->
@@ -69,7 +90,16 @@
             icon="info"
             class="q-my-sm"
             @click="groupDialog = true"
-          />
+          >
+            <q-tooltip
+              style="background-color: #bb2e29"
+              class="text-body2"
+              anchor="center right"
+              self="center left"
+            >
+              group usage info
+            </q-tooltip>
+          </q-btn>
         </div>
       </div>
       <!-- POLY -->
@@ -149,7 +179,16 @@
               color="primary"
               icon="restore"
               @click="showGeneo()"
-            />
+            >
+              <q-tooltip
+                style="background-color: #bb2e29"
+                class="text-body2"
+                anchor="center right"
+                self="center left"
+              >
+                restore normalaize constant
+              </q-tooltip>
+            </q-btn>
           </div>
         </div>
       </div>
@@ -158,7 +197,7 @@
     <!-- MAIN -->
     <q-page-container>
       <!-- GENEO CANVAS -->
-      <div class="full-width row justify-center">
+      <div class="full-width row justify-center q-mt-sm">
         <div class="column justify-start q-mt-md">
           <div class="">
             <div class="row">
@@ -183,7 +222,16 @@
                     color="primary"
                     icon="print"
                     @click="download_image()"
-                  />
+                  >
+                    <q-tooltip
+                      style="background-color: #bb2e29"
+                      class="text-body2"
+                      anchor="center right"
+                      self="center left"
+                    >
+                      print image
+                    </q-tooltip>
+                  </q-btn>
                 </div>
               </div>
             </div>
@@ -218,8 +266,17 @@
                   size="sm"
                   color="primary"
                   icon="rotate_90_degrees_cw"
-                  @click="initTestImage('r')"
-                />
+                  @click="initTestImage()"
+                >
+                  <q-tooltip
+                    style="background-color: #bb2e29"
+                    class="text-body2"
+                    anchor="center right"
+                    self="center left"
+                  >
+                    rotate image
+                  </q-tooltip>
+                </q-btn>
               </div>
               <div class="q-my-sm q-ml-sm">
                 <q-btn
@@ -227,8 +284,17 @@
                   size="sm"
                   color="primary"
                   icon="flip"
-                  @click="initTestImage('y')"
-                />
+                  @click="initTestImage()"
+                >
+                  <q-tooltip
+                    style="background-color: #bb2e29"
+                    class="text-body2"
+                    anchor="center right"
+                    self="center left"
+                  >
+                    flips the image horizontally
+                  </q-tooltip>
+                </q-btn>
               </div>
               <div class="q-my-sm q-ml-sm">
                 <q-btn
@@ -237,8 +303,17 @@
                   color="primary"
                   icon="flip"
                   class="rotate-90"
-                  @click="initTestImage('x')"
-                />
+                  @click="initTestImage()"
+                >
+                  <q-tooltip
+                    style="background-color: #bb2e29"
+                    class="text-body2"
+                    anchor="center right"
+                    self="center left"
+                  >
+                    flips the image vertically
+                  </q-tooltip>
+                </q-btn>
               </div>
             </div>
           </div>
@@ -246,18 +321,7 @@
           <div class="row justify-start">
             <small>{{ canvasSize }} X {{ canvasSize }} </small>
           </div>
-          <q-btn
-            class="absolute-bottom-right q-ma-md"
-            round
-            size="md"
-            color="primary"
-            icon="refresh"
-            @click="reload()"
-          />
         </div>
-      </div>
-      <div class="absolute">
-        <div class="full-width row justify-end"></div>
       </div>
     </q-page-container>
 
@@ -485,8 +549,6 @@ import { Matrix } from "ml-matrix";
 import { onMounted, ref, watch } from "vue";
 import { CanvasUtils } from "../utils/CanvasUtils";
 import { PolynomialUtils } from "../utils/PolynomialUtils";
-import { save } from "@tauri-apps/api/dialog";
-import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
 import { MathfieldElement } from "mathlive";
 const mfe = new MathfieldElement();
 
@@ -594,27 +656,7 @@ const selectGroup = (group: Group) => {
   groupSelected.value = group;
 };
 
-const download_image = async () => {
-  const filePath = await save({
-    defaultPath: BaseDirectory.Desktop + "/geneo.png",
-    filters: [
-      {
-        name: "Image",
-        extensions: ["jpg", "png"],
-      },
-    ],
-  });
-  var ctx = canvasGeneo.getContext("2d", { willReadFrequently: true });
-  var geneoImageData = ctx.getImageData(
-    0,
-    0,
-    canvasSize.value,
-    canvasSize.value
-  );
-  console.log(filePath, geneoImageData);
-  const res = await writeBinaryFile(filePath, geneoImageData);
-  console.log(res);
-};
+const download_image = async () => {};
 
 const showGeneo = () => {
   if (testImg && testImgMatrix) {
@@ -659,32 +701,11 @@ const showGeneo = () => {
   }
 };
 
-const initTestImage = (type: string) => {
+const initTestImage = () => {
   if (testImg) {
     var ctx = canvasOriginal.getContext("2d", { willReadFrequently: true });
     if (ctx) {
       ctx.clearRect(0, 0, canvasSize.value, canvasSize.value);
-      if (type !== "") {
-        // move the context to the center of the canvas
-        ctx.translate(
-          Math.floor(canvasSize.value / 2),
-          Math.floor(canvasSize.value / 2)
-        );
-        if (type === "r") {
-          ctx.rotate((+90 * Math.PI) / 180);
-        }
-        if (type === "x") {
-          ctx.scale(1, -1);
-        } else if (type === "y") {
-          ctx.scale(-1, 1);
-        }
-
-        // move the context back to the top left of the canvas
-        ctx.translate(
-          -Math.floor(canvasSize.value / 2),
-          -Math.floor(canvasSize.value / 2)
-        );
-      }
       ctx.drawImage(
         testImg,
         0,
@@ -770,7 +791,7 @@ watch(
       var reader = new FileReader();
       reader.onload = () => {
         testImg.src = reader.result as string;
-        testImg.onload = () => initTestImage("");
+        testImg.onload = () => initTestImage();
       };
       reader.readAsDataURL(newVal);
     }
