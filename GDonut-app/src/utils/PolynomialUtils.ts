@@ -5,7 +5,7 @@ import { create, all, Parser, factorial } from "mathjs";
 
 export class PolynomialUtils {
     image: Matrix;
-    canvas: HTMLImageElement;
+    sampleImg: HTMLImageElement;
     canvasSize: number;
     permutants: Permutant[];
     unknowns: Array<{ label: string, value: string }>;
@@ -15,27 +15,17 @@ export class PolynomialUtils {
 
     constructor(
         image: Matrix,
-        canvas: HTMLImageElement,
+        sampleImg: HTMLImageElement,
         canvasSize: number,
         permutants: Permutant[],
         unknowns: Array<{ label: string, value: string }>
     ) {
         this.image = image;
-        this.canvas = canvas;
+        this.sampleImg = sampleImg;
         this.canvasSize = canvasSize;
         this.permutants = permutants;
         this.unknowns = unknowns;
     }
-
-    /**
-     * Returns the identity function
-     * 
-     * @returns array containing identity matrix
-     */
-    identity(
-    ) {
-        return this.image.to1DArray();
-    };
 
     /**
      * Returns an array with data of the image moved to the position passed by parameter 
@@ -45,7 +35,7 @@ export class PolynomialUtils {
      * @param y vertical displacement
      * @returns array containing the moved image 
      */
-    spaceMoviment(
+    spaceMovement(
         x: number,
         y: number
     ) {
@@ -61,7 +51,7 @@ export class PolynomialUtils {
     };
 
     /**
-    * Returns an array with data of the image rotated by degree (multiples of 90)
+    * Returns an array with data of the image rotated by degree (integer multiples of 90)
     * 
     * @param degree degree of image rotation
     * @returns array containing the rotated image 
@@ -90,15 +80,11 @@ export class PolynomialUtils {
                 -Math.floor(this.canvasSize / 2)
             );
             ctxRotate.drawImage(
-                this.canvas,
-                0,
-                0,
-                this.canvas.width,
-                this.canvas.height,
+                this.sampleImg,
                 0,
                 0,
                 this.canvasSize,
-                this.canvasSize
+                this.canvasSize,
             );
 
             var testImgDataRotate = ctxRotate.getImageData(
@@ -115,77 +101,7 @@ export class PolynomialUtils {
             return result.to1DArray();
         }
         else {
-            throw "ctxRotate is null";
-            return null;
-        }
-    };
-
-    /**
-     * Returns an array with data of the image flipped by the axis passed by parameter
-     * 
-     * @param axis on which the image will be flipped
-     * @returns array containing the flipped image
-     */
-    reflection(
-        axis: any
-    ) {
-        var canvasReflect = document.createElement("canvas");
-        canvasReflect.width = canvasReflect.height = this.canvasSize;
-        var ctxReflect = canvasReflect.getContext("2d");
-
-        if (ctxReflect) {
-            var ctxReflectPre = ctxReflect;
-
-            ctxReflect.clearRect(0, 0, canvasReflect.width, canvasReflect.height);
-            // move the context to the center of the canvas
-            ctxReflect.translate(
-                Math.floor(this.canvasSize / 2),
-                Math.floor(this.canvasSize / 2)
-            );
-
-            if (axis === "x") {
-                ctxReflect.scale(1, -1);
-            }
-            else if (axis === "y") {
-                ctxReflect.scale(-1, 1);
-            }
-            else if (axis === "xy") {
-                ctxReflect.scale(-1, -1);
-            }
-
-            // move the context back to the top left of the canvas
-            ctxReflect.translate(
-                -Math.floor(this.canvasSize / 2),
-                -Math.floor(this.canvasSize / 2)
-            );
-            ctxReflect.drawImage(
-                this.canvas,
-                0,
-                0,
-                this.canvas.width,
-                this.canvas.height,
-                0,
-                0,
-                this.canvasSize,
-                this.canvasSize
-            );
-
-            var testImgDataReflect = ctxReflect.getImageData(
-                0,
-                0,
-                this.canvasSize,
-                this.canvasSize
-            );
-
-            var result = CanvasUtils.canvasToMatrix(testImgDataReflect.data, this.canvasSize);
-
-            ctxReflect = ctxReflectPre;
-
-            return result.to1DArray();
-        }
-        else {
-            throw "ctxReflect is null";
-            return null;
+            throw "ctxRotate not exist";
         }
     };
 
@@ -196,22 +112,21 @@ export class PolynomialUtils {
      * @returns the product of the matrices
     */
     multiplyMatrices(matrices: Matrix[]) {
-        var result = matrices.reduce((acc, val) => {
-            return Matrix.multiply(acc, val);
+        var result = matrices.reduce((prod1, prod2) => {
+            return Matrix.multiply(prod1, prod2);
         });
         return result.to1DArray();
     };
 
     /**
-     * Returns the the division by a scalar of a matrix
+     * Returns the division of an array by a matrices
      * 
-     * @param dividend matrix to be divided
-     * @param divider nubmer to divide the matrix
-     * @returns the array with the data of matrix divided by the scalar
+     * @param matrices 
+     * @returns the quotient of the division
      */
     divideMatrices(matrices: Matrix[]) {
-        var result = matrices.reduce((acc, val) => {
-            return Matrix.divide(acc, val);
+        var result = matrices.reduce((dividend, divisor) => {
+            return Matrix.divide(dividend, divisor);
         });
         return result.to1DArray();
     };
@@ -246,6 +161,8 @@ export class PolynomialUtils {
 
     /**
      * Returns the combination of the lexicographic order l 
+     * e.g. n = 4 | p = 2 | l = 2
+     * {1,2,3,4} | {1,2},{1,3},{1,4},{2,3},{2,4},{3,4} | {1,3}
      * 
      * @param n size of the set
      * @param p nubers of elements in each combination
@@ -284,8 +201,8 @@ export class PolynomialUtils {
     }
 
     /**
-     * Returns array fill with the value of the rank elementary symmetric function 
-     * of the permutant passed by parameter
+     * Returns an array filled with the value of the rank elementary symmetric function 
+     * of the permutant passed by arguments
      * 
      * @param rank rank of the elementary symmetric function
      * @param args array of the permutant
@@ -293,10 +210,11 @@ export class PolynomialUtils {
      */
     eleSymPoly(rank: number, ...args: number[][]) {
         var size = args.length;
+        // s(4,a_1,a_2,...,a_n) => size=n > rank=4 OK
         if (size < rank) {
             throw "The rank must be greater or equal to the size of the array";
-            return null;
         }
+        // number of combinations
         var nCr = this.binom(size, rank);
 
         var result: Matrix = Matrix.zeros(this.canvasSize, this.canvasSize * 4);
@@ -306,6 +224,9 @@ export class PolynomialUtils {
             return CanvasUtils.canvasToMatrix(arg, this.canvasSize);
         });
 
+        // at each cycle I take a major lexicographic order and multiply it by the previous value
+        // and then add it up when I reached the number of combinations 
+        // s(2,a_1,a_2,...,a_n) = a_1a_2+a_1a_3+...+a_(n-1)a_n
         for (var order = 0; order < nCr; order++) {
             var step = Matrix.ones(this.canvasSize, this.canvasSize * 4);
             var combinations = this.A515(size, rank, order);
@@ -319,19 +240,20 @@ export class PolynomialUtils {
 
     LaTeXToPolyGen = (polynomial: string): string => {
         var ply = polynomial;
-        // replace all a_1,...,a_n 
+        // replace all a_1,...,a_n with ""
         ply = ply.replace(/\(a_\d+(,a_\d+)*\)/g, "");
-        // replace \sigma_{n} to s(n)
+        // replace \sigma_{n} with s(n)
         ply = ply.replace(/\\sigma_(\d+)/g, "s($1)");
         ply = ply.replace(/\\sigma_\{(\d+)\}/g, "s($1)");
-        // replace \cdot to *
+        // replace \cdot with *
         ply = ply.replace(/\\cdot/g, "*");
 
+        // replace +-s(n) with +-1*s(n)
         ply = ply.replace(/\+s\((\d+)\)/g, "+1*s($1)")
         ply = ply.replace(/^s\((\d+)\)/g, "1*s($1)")
         ply = ply.replace(/-s\((\d+)\)/g, "-1*s($1)")
 
-        // replace all ^a with ^{a}
+        // replace all ^n with ^{n}
         ply = ply.replace(/\^(-?\d+\.?\d*)/g, "^{$1}");
 
         // loop and replace all n*r with the result of the multiplication until there is no more n*r
@@ -579,10 +501,6 @@ export class PolynomialUtils {
         // parsing permutant
         this.permutants.forEach((permutant) => {
             switch (permutant.internalName) {
-                case "ide":
-                    parser.set(permutant.label,
-                        this.identity());
-                    break;
                 case "lin":
                     var values = [0];
                     if (permutant.value) {
@@ -596,7 +514,7 @@ export class PolynomialUtils {
                         values = tempPermVal.split(",").map(Number);
                     }
                     parser.set(permutant.label,
-                        this.spaceMoviment(values[0], values[1]));
+                        this.spaceMovement(values[0], values[1]));
                     break;
                 case "rot":
                     var value = 0;
@@ -606,13 +524,6 @@ export class PolynomialUtils {
                     parser.set(permutant.label,
                         this.rotation(value)
                     );
-                    break;
-                case "ref":
-                    if (permutant.value) {
-                        parser.set(permutant.label,
-                            this.reflection(permutant.value)
-                        );
-                    }
                     break;
 
                 default:
