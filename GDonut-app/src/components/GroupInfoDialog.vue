@@ -1,6 +1,9 @@
 <template>
   <q-dialog ref="dialogRef" @hide="onDialogHide">
-    <q-card class="q-dialog-plugin" style="width: 40vw; max-width: 80vw">
+    <q-card
+      class="q-dialog-plugin"
+      style="width: 40vw; max-width: 80vw; max-width: 900px; min-width: 600px"
+    >
       <q-toolbar>
         <q-toolbar-title
           ><span class="text-weight-bold">Group : </span>
@@ -103,6 +106,7 @@
                   border: 1px solid rgba(0, 0, 0, 0.3);
                   outline-color: #bb2e29;
                   box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+                  max-width: 500px;
                 "
                 readonly="true"
                 keypress-sound="none"
@@ -156,7 +160,7 @@
                 <div class="full-width row justify-center q-mt-md">
                   <q-input
                     square
-                    class="w-auto q-mx-xs q-my-xs"
+                    class="w-auto q-mx-xs q-my-xs col-6"
                     outlined
                     v-model="normalizeBy"
                     readonly

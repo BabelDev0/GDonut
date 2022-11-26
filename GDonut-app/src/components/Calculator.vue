@@ -120,7 +120,7 @@
         <q-input
           v-for="unknown in groupSelected.unknowns"
           square
-          class="w-auto q-mx-xs q-my-xs"
+          class="w-auto q-mx-xs q-my-xs col-5"
           outlined
           v-model="unknown.value"
           :key="unknown.label"
@@ -157,7 +157,7 @@
       >
         <q-input
           square
-          class="w-auto q-mx-xs q-my-xs"
+          class="w-auto q-mx-xs q-my-xs col-6"
           outlined
           v-model="normalizeBy"
         >
