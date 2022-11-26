@@ -1,4 +1,4 @@
-export class Data {
+export class DataStructures {
     static permutants: Array<Permutant> = [
         {
             label: "a_1",
