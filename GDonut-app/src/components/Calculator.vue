@@ -74,7 +74,7 @@
             v-for="item in groups"
             square
             color="primary"
-            @click="selectGroup(item)"
+            @click="groupSelected = item"
             :label="item.label"
             :key="item.label"
           />
@@ -579,10 +579,6 @@ const groupSelected = ref<Group>({
   permutants: [],
   unknowns: [],
 });
-
-const selectGroup = (group: Group) => {
-  groupSelected.value = group;
-};
 
 const download_image = async () => {};
 
