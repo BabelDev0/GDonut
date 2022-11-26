@@ -5,16 +5,14 @@ export class CanvasUtils {
      * Return a matrix with the data of a canvas
      * 
      * @param imgData image data taken from the canvas
-     * @param width width of the image (must be multiplied by 4)
-     * @param height height of the image
+     * @param size size of the image (in with will be multiplied by 4 )
      * @returns matrix with the image data
      */
     static canvasToMatrix(
         imgData: number[] | Uint8ClampedArray,
-        imgWith: number,
-        imgHeight: number
+        size: number
     ): Matrix {
-        return Matrix.from1DArray(imgHeight, imgWith * 4, imgData);;
+        return Matrix.from1DArray(size, size * 4, imgData);
     }
 
     /**

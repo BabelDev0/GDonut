@@ -25,21 +25,14 @@
         </q-file>
         <!-- RELOAD AND INFO BUTTON -->
         <div class="row">
-          <q-btn
-            flat
-            round
-            size="lg"
-            color="white"
-            icon="info"
-            @click="reload()"
-          />
+          <q-btn flat round size="lg" color="white" icon="info" @click="" />
           <q-btn
             flat
             round
             size="lg"
             color="white"
             icon="refresh"
-            @click="reload()"
+            @click="reloadWindow()"
           />
         </div>
       </q-toolbar>
@@ -59,7 +52,7 @@
 
       <!-- GROUP -->
       <div class="full-width row justify-start q-py-xs">
-        <!-- select group -->
+        <!-- SELECT GROUP -->
         <q-fab
           square
           flat
@@ -161,7 +154,7 @@
           square
           class="w-auto q-mx-xs q-my-xs"
           outlined
-          v-model="constToNormalize"
+          v-model="normalizeBy"
         >
           <template v-slot:prepend>
             <q-chip color="primary" text-color="white" square>
@@ -248,7 +241,7 @@
             <div class="col-11">
               <canvas
                 class="q-mt-md q-mb-xs"
-                id="canvasOriginal"
+                id="canvasSample"
                 :width="canvasSize"
                 :height="canvasSize"
                 style="border: 1px solid #bb2e29"
@@ -264,7 +257,7 @@
                   size="sm"
                   color="primary"
                   icon="rotate_90_degrees_cw"
-                  @click="initTestImage()"
+                  @click="initSampleImage()"
                 >
                   <q-tooltip
                     style="background-color: #bb2e29"
@@ -282,7 +275,7 @@
                   size="sm"
                   color="primary"
                   icon="flip"
-                  @click="initTestImage()"
+                  @click="initSampleImage()"
                 >
                   <q-tooltip
                     style="background-color: #bb2e29"
@@ -301,7 +294,7 @@
                   color="primary"
                   icon="flip"
                   class="rotate-90"
-                  @click="initTestImage()"
+                  @click="initSampleImage()"
                 >
                   <q-tooltip
                     style="background-color: #bb2e29"
@@ -485,7 +478,7 @@
                       square
                       class="w-auto q-mx-xs q-my-xs"
                       outlined
-                      v-model="constToNormalize"
+                      v-model="normalizeBy"
                       readonly
                     >
                       <template v-slot:prepend>
@@ -553,26 +546,43 @@ const mfe = new MathfieldElement();
 
 // selectable groups
 const groups: Array<Group> = Data.groups;
+// size of all canvases (they are all square)
+const canvasSize = 350;
 
+// canvases to paint on
 var canvasGeneo: any;
-var canvasOriginal: any;
-var testImg = new Image();
-var testImgMatrix: Matrix;
-var polynomialUtils: PolynomialUtils;
-var geneoMatrix: Matrix | null;
-var afterGeneo = true;
-const canvasSize = ref(0);
-const drawerSize = ref(500);
-const filePicker = ref(null);
-const leftDrawerOpen = ref(true);
-const polynomial = ref<string>("");
-const polynomialTest = ref<string>("");
-const stateWrite = ref(false);
-const constToNormalize = ref(0);
+var canvasSample: any;
 
-const group = ref(false);
-const groupDialog = ref(false);
-const groupStep = ref(1);
+//sample image from wich to extract the sample matrix
+var sampleImg = new Image();
+
+// matrixes to work with
+var sampleImgMatrix: Matrix;
+var geneoMatrix: Matrix | null;
+
+// use to debounce the geneo matrix calculation
+var timerCallShowGeneo = 0;
+
+// polynomial to be evaluated
+const poly = ref<string>("");
+
+// drawer settings
+const drawerSize = 500;
+const leftDrawerOpen = true;
+
+// class use to evaluate the polynomial and generate the geneo
+var polyUtils: PolynomialUtils;
+
+// variable used to detect whether the showGeneo method has just been executed
+var justShowGeneo = true;
+
+// variable used to trigger the picker of the sample image
+const filePicker = ref(null);
+
+// variable used to normalize the geneo by different values from the default
+const normalizeBy = ref(0);
+
+// group selected by the user
 const groupSelected = ref<Group>({
   label: "",
   description: "",
@@ -580,37 +590,55 @@ const groupSelected = ref<Group>({
   unknowns: [],
 });
 
+const polynomialTest = ref<string>("");
+const stateWrite = ref(false);
+
+const group = ref(false);
+const groupDialog = ref(false);
+const groupStep = ref(1);
+
 const download_image = async () => {};
 
+const reloadWindow = () => {
+  window.location.reload();
+};
+
+/**
+ * method to calculate the geneo
+ * normalise it and display it on the canvas
+ */
 const showGeneo = () => {
-  if (testImg && testImgMatrix) {
+  if (sampleImgMatrix) {
     if (groupSelected.value.label !== "") {
-      if (polynomial.value != "") {
+      if (poly.value != "") {
         try {
-          polynomialUtils = new PolynomialUtils(
-            testImgMatrix,
-            testImg,
-            canvasSize.value,
+          polyUtils = new PolynomialUtils(
+            sampleImgMatrix,
+            sampleImg,
+            canvasSize,
             groupSelected.value.permutants,
             groupSelected.value.unknowns
           );
-          geneoMatrix = polynomialUtils.evaluate(polynomial.value);
+
+          // matrix with the geneo also with the constant
+          geneoMatrix = polyUtils.evaluate(poly.value);
           console.log("Geneo", geneoMatrix);
+
+          if (geneoMatrix) {
+            // matrix with the geneo normalized by (default == -1)
+            var geneoMatrixNormalized = polyUtils.normalizeGeneo(
+              geneoMatrix,
+              -1
+            );
+            console.log("Normalized", geneoMatrixNormalized);
+            justShowGeneo = true;
+            normalizeBy.value = polyUtils.constToNormalize;
+            CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
+          }
         } catch (e) {
           CanvasUtils.clearCanvas(canvasGeneo);
           console.log(e);
           return;
-        }
-
-        if (geneoMatrix) {
-          var geneoMatrixNormalized = polynomialUtils.normalizeGeneo(
-            geneoMatrix,
-            -1
-          );
-          afterGeneo = true;
-          constToNormalize.value = polynomialUtils.constToNormalize;
-          console.log("Normalized", geneoMatrixNormalized);
-          CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
         }
       } else {
         CanvasUtils.clearCanvas(canvasGeneo);
@@ -619,38 +647,28 @@ const showGeneo = () => {
       console.log("Group not selected");
     }
   } else {
-    console.log("Test image not exist");
+    console.log("Sample image not exist");
   }
 };
 
-const initTestImage = () => {
-  if (testImg) {
-    var ctx = canvasOriginal.getContext("2d", { willReadFrequently: true });
+/**
+ * I acquire the image data and transform it into a matrix
+ * then call showGeneo to show the geneo in the event of an
+ * image change during previous processing
+ */
+const initSampleImage = () => {
+  if (sampleImg) {
+    var ctx = canvasSample.getContext("2d", { willReadFrequently: true });
     if (ctx) {
-      ctx.clearRect(0, 0, canvasSize.value, canvasSize.value);
-      ctx.drawImage(
-        testImg,
-        0,
-        0,
-        testImg.width,
-        testImg.height,
-        0,
-        0,
-        canvasSize.value,
-        canvasSize.value
-      );
+      CanvasUtils.clearCanvas(canvasSample);
+      // draws the image in the canvas by applying a resize
+      ctx.drawImage(sampleImg, 0, 0, canvasSize, canvasSize);
 
-      var testImgData = ctx.getImageData(
-        0,
-        0,
-        canvasSize.value,
-        canvasSize.value
-      );
+      var sampleImgData = ctx.getImageData(0, 0, canvasSize, canvasSize);
 
-      testImgMatrix = CanvasUtils.canvasToMatrix(
-        testImgData.data,
-        canvasSize.value,
-        canvasSize.value
+      sampleImgMatrix = CanvasUtils.canvasToMatrix(
+        sampleImgData.data,
+        canvasSize
       );
 
       showGeneo();
@@ -662,17 +680,18 @@ const initTestImage = () => {
   }
 };
 
-const reload = () => {
-  window.location.reload();
-};
-
+/**
+ * does the bind between the variables and the canvas
+ * and between the polynomial var and the math field
+ */
 onMounted(() => {
-  canvasOriginal = document.getElementById("canvasOriginal");
+  canvasSample = document.getElementById("canvasSample");
   canvasGeneo = document.getElementById("canvasGeneo");
-  canvasSize.value = 350;
-  if (document && document.getElementById("formula")) {
+
+  // binds the contents of the math field with the polynomial variable
+  if (document.getElementById("formula")) {
     document.getElementById("formula")!.addEventListener("input", (ev: any) => {
-      polynomial.value = ev.target.value;
+      poly.value = ev.target.value;
     });
   }
 });
@@ -706,14 +725,19 @@ watch(groupStep, () => {
   }
 });
 
+/**
+ * watch at the file picker if you select an image it
+ * loads it as a sample image to do the processing on
+ */
 watch(
   filePicker,
   (newVal) => {
     if (newVal) {
       var reader = new FileReader();
       reader.onload = () => {
-        testImg.src = reader.result as string;
-        testImg.onload = () => initTestImage();
+        sampleImg.src = reader.result as string;
+        // when the image is loaded it calls the initSampleImage function
+        sampleImg.onload = () => initSampleImage();
       };
       reader.readAsDataURL(newVal);
     }
@@ -721,35 +745,55 @@ watch(
   { immediate: true }
 );
 
-watch(constToNormalize, () => {
-  if (!afterGeneo) {
+/**
+ * watch at the normalizeBy variable to normalize de geneo and show it
+ * if the normalizeBy is changed,
+ * the method prevents to run if the showGeneo method has just been executed
+ */
+watch(normalizeBy, () => {
+  if (!justShowGeneo) {
     if (geneoMatrix) {
-      var geneoMatrixNormalized = polynomialUtils.normalizeGeneo(
+      var geneoMatrixNormalized = polyUtils.normalizeGeneo(
         geneoMatrix,
-        +constToNormalize.value
+        +normalizeBy.value
       );
 
       CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
     }
   } else {
-    afterGeneo = false;
+    justShowGeneo = false;
   }
 });
 
-var timer = 0;
+/**
+ * watch at the polynomial variable and call the showGeneo method if the polynomial is changed
+ * delay the execution of the function showGeneo to avoid the execution
+ * of the function when the user is typing
+ */
 watch(
-  [polynomial, groupSelected],
+  poly,
   () => {
-    // delay the execution of the function showGeneo
-    // to avoid the execution of the function when the user is typing
-
-    if (timer) {
-      clearTimeout(timer);
+    //
+    if (timerCallShowGeneo) {
+      clearTimeout(timerCallShowGeneo);
     }
-    timer = setTimeout(() => {
+    timerCallShowGeneo = setTimeout(() => {
       console.log("show geneo");
       showGeneo();
     }, 200);
+  },
+  { deep: true }
+);
+
+/**
+ * watch at the groupSelected variable and call the showGeneo method if the group is changed
+ * this method is separated from the watch of the polynomial variable only due to the timer
+ */
+watch(
+  groupSelected,
+  () => {
+    console.log("show geneo");
+    showGeneo();
   },
   { deep: true }
 );
@@ -757,11 +801,4 @@ watch(
 
 <style scoped>
 @import "mathlive/dist/mathlive-fonts.css";
-.rotate_image {
-  -webkit-transform: rotate(45deg);
-  -moz-transform: rotate(45deg);
-  -ms-transform: rotate(45deg);
-  -o-transform: rotate(45deg);
-  transform: rotate(45deg);
-}
 </style>

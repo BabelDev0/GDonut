@@ -108,7 +108,7 @@ export class PolynomialUtils {
                 this.canvasSize
             );
 
-            var result = CanvasUtils.canvasToMatrix(testImgDataRotate.data, this.canvasSize, this.canvasSize);
+            var result = CanvasUtils.canvasToMatrix(testImgDataRotate.data, this.canvasSize);
 
             ctxRotate = ctxRotatePre;
 
@@ -177,7 +177,7 @@ export class PolynomialUtils {
                 this.canvasSize
             );
 
-            var result = CanvasUtils.canvasToMatrix(testImgDataReflect.data, this.canvasSize, this.canvasSize);
+            var result = CanvasUtils.canvasToMatrix(testImgDataReflect.data, this.canvasSize);
 
             ctxReflect = ctxReflectPre;
 
@@ -303,7 +303,7 @@ export class PolynomialUtils {
 
         let matrices: Matrix[];
         matrices = args.map((arg: any) => {
-            return CanvasUtils.canvasToMatrix(arg, this.canvasSize, this.canvasSize);
+            return CanvasUtils.canvasToMatrix(arg, this.canvasSize);
         });
 
         for (var order = 0; order < nCr; order++) {
@@ -624,7 +624,7 @@ export class PolynomialUtils {
         parser.set('m', (...args: number[][]) => {
             let matrices: Matrix[];
             matrices = args.map((arg) => {
-                return CanvasUtils.canvasToMatrix(arg, this.canvasSize, this.canvasSize);
+                return CanvasUtils.canvasToMatrix(arg, this.canvasSize);
             });
             return this.multiplyMatrices(matrices);
         });
@@ -633,14 +633,14 @@ export class PolynomialUtils {
         parser.set('f', (...args: number[][]) => {
             let matrices: Matrix[];
             matrices = args.map((arg) => {
-                return CanvasUtils.canvasToMatrix(arg, this.canvasSize, this.canvasSize);
+                return CanvasUtils.canvasToMatrix(arg, this.canvasSize);
             });
             return this.divideMatrices(matrices);
         });
 
         // parsing power
         parser.set('p', (base: number[], exp: number) => {
-            var baseMatrix = CanvasUtils.canvasToMatrix(base, this.canvasSize, this.canvasSize);
+            var baseMatrix = CanvasUtils.canvasToMatrix(base, this.canvasSize);
             return this.powerMatrix(baseMatrix, exp);
         });
 
@@ -664,7 +664,7 @@ export class PolynomialUtils {
         if (parser) {
             const poly = this.LaTeXToPoly(polynomialLatex);
             var result = parser.evaluate(poly);
-            var matrixResult = CanvasUtils.canvasToMatrix(result, this.canvasSize, this.canvasSize);
+            var matrixResult = CanvasUtils.canvasToMatrix(result, this.canvasSize);
             this.setMimg(matrixResult);
 
             const geneoConst = this.getGeneoConstant(polynomialLatex);
