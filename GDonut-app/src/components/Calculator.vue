@@ -3,8 +3,6 @@
     <!-- HEADER -->
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
-        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
-
         <q-toolbar-title class="absolute-center text-weight-medium">
           Calculator
         </q-toolbar-title>
@@ -581,10 +579,6 @@ const groupSelected = ref<Group>({
   permutants: [],
   unknowns: [],
 });
-
-const toggleLeftDrawer = () => {
-  leftDrawerOpen.value = !leftDrawerOpen.value;
-};
 
 const selectGroup = (group: Group) => {
   groupSelected.value = group;
