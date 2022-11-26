@@ -33,4 +33,16 @@ export class CanvasUtils {
             ctx.putImageData(imgData, 0, 0);
         }
     }
+
+    /**
+     * clear a canvas
+     * 
+     * @param canvas canvas to clear
+     */
+    static clearCanvas(canvas: HTMLCanvasElement) {
+        var ctx = canvas.getContext("2d");
+        if (ctx) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    }
 }

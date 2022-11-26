@@ -550,7 +550,11 @@ import { onMounted, ref, watch } from "vue";
 import { CanvasUtils } from "../utils/CanvasUtils";
 import { PolynomialUtils } from "../utils/PolynomialUtils";
 import { MathfieldElement } from "mathlive";
+import { Data } from "../interfaces/data";
 const mfe = new MathfieldElement();
+
+// selectable groups
+const groups: Array<Group> = Data.groups;
 
 var canvasGeneo: any;
 var canvasOriginal: any;
@@ -567,76 +571,6 @@ const polynomial = ref<string>("");
 const polynomialTest = ref<string>("");
 const stateWrite = ref(false);
 const constToNormalize = ref(0);
-
-const permutants: Array<Permutant> = [
-  {
-    label: "a_1",
-    internalName: "rot",
-    description: "rotations around the centre of the image by 90 degrees",
-    value: "90",
-  },
-  {
-    label: "a_2",
-    internalName: "rot",
-    description: "rotations around the centre of the image by -90 degrees",
-    value: "-90",
-  },
-  {
-    label: "a_3",
-    internalName: "rot",
-    description: "rotations around the centre of the image by 180 degrees",
-    value: "180",
-  },
-  {
-    label: "a_4",
-    internalName: "rot",
-    description: "rotations around the centre of the image by 360 degrees",
-    value: "360",
-  },
-  {
-    label: "a_1",
-    internalName: "lin",
-    description: "linear translations of (x,y) pixels",
-    value: "x,y",
-  },
-  {
-    label: "a_2",
-    internalName: "lin",
-    description: "linear translations of (y,-x) pixels",
-    value: "y,-x",
-  },
-  {
-    label: "a_3",
-    internalName: "lin",
-    description: "linear translations of (-x,-y) pixels",
-    value: "-x,-y",
-  },
-  {
-    label: "a_4",
-    internalName: "lin",
-    description: "linear translations of (-y,x) pixels",
-    value: "-y,x",
-  },
-];
-const groups: Array<Group> = [
-  {
-    label: "G1",
-    description:
-      "Group formed by rotations around the centre of the image by integer multiples of 90 degrees and a symmetry on the y-axis",
-    permutants: [permutants[0], permutants[1], permutants[2], permutants[3]],
-    unknowns: [],
-  },
-  {
-    label: "G2",
-    description:
-      "Group formed by rotations around the centre of the image by integer multiples of 90 degrees",
-    permutants: [permutants[4], permutants[5], permutants[6], permutants[7]],
-    unknowns: [
-      { label: "x", value: "0" },
-      { label: "y", value: "0" },
-    ],
-  },
-];
 
 const group = ref(false);
 const groupDialog = ref(false);
@@ -673,8 +607,7 @@ const showGeneo = () => {
           geneoMatrix = polynomialUtils.evaluate(polynomial.value);
           console.log("Geneo", geneoMatrix);
         } catch (e) {
-          var ctx = canvasGeneo.getContext("2d");
-          ctx.clearRect(0, 0, canvasSize.value, canvasSize.value);
+          CanvasUtils.clearCanvas(canvasGeneo);
           console.log(e);
           return;
         }
@@ -690,8 +623,7 @@ const showGeneo = () => {
           CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
         }
       } else {
-        var ctx = canvasGeneo.getContext("2d");
-        ctx.clearRect(0, 0, canvasGeneo.width, canvasGeneo.height);
+        CanvasUtils.clearCanvas(canvasGeneo);
       }
     } else {
       console.log("Group not selected");
