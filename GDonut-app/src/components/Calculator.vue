@@ -8,24 +8,30 @@
         </q-toolbar-title>
         <q-space />
         <!-- FILE PICKER -->
-        <q-file
-          class="standout-color-white"
-          outlined
-          v-model="filePicker"
-          label-color="white"
-          item-aligned
-          label="Select Image"
-          color="white"
-          style="min-width: 20em"
-          maxlength="1"
-        >
-          <template v-slot:prepend>
-            <q-icon name="cloud_upload" color="white" size="lg" />
-          </template>
-        </q-file>
+        <input
+          type="file"
+          id="filePicker"
+          @change="onFileChange"
+          style="display: none"
+        />
         <!-- RELOAD AND INFO BUTTON -->
         <div class="row">
-          <q-btn flat round size="lg" color="white" icon="info" @click="" />
+          <q-btn
+            flat
+            round
+            size="lg"
+            color="white"
+            icon="cloud_upload"
+            @click="filePicker.click()"
+          />
+          <q-btn
+            flat
+            round
+            size="lg"
+            color="white"
+            icon="info"
+            @click="showGroupInfoDialog()"
+          />
           <q-btn
             flat
             round
@@ -361,7 +367,7 @@ var polyUtils: PolynomialUtils;
 var justShowGeneo = true;
 
 // variable used to trigger the picker of the sample image
-const filePicker = ref(null);
+var filePicker: any;
 
 // variable used to normalize the geneo by different values from the default
 const normalizeBy = ref(0);
@@ -383,6 +389,18 @@ function showGroupInfoDialog() {
       groupSelected: groupSelected,
     },
   });
+}
+
+// Used to load the sample image
+function onFileChange(e: any) {
+  var files = e.target.files || e.dataTransfer.files;
+  var reader = new FileReader();
+  reader.onload = () => {
+    sampleImg.src = reader.result as string;
+    // when the image is loaded it calls the initSampleImage function
+    sampleImg.onload = () => initSampleImage();
+  };
+  reader.readAsDataURL(files[0]);
 }
 
 const download_image = async () => {};
@@ -475,6 +493,8 @@ const initSampleImage = () => {
 onMounted(() => {
   canvasSample = document.getElementById("canvasSample");
   canvasGeneo = document.getElementById("canvasGeneo");
+  filePicker = document.getElementById("filePicker");
+  console.log("mounted", canvasSample, canvasGeneo, filePicker);
 
   // binds the contents of the math field with the polynomial variable
   if (document.getElementById("formula")) {
@@ -483,26 +503,6 @@ onMounted(() => {
     });
   }
 });
-
-/**
- * watch at the file picker if you select an image it
- * loads it as a sample image to do the processing on
- */
-watch(
-  filePicker,
-  (newVal) => {
-    if (newVal) {
-      var reader = new FileReader();
-      reader.onload = () => {
-        sampleImg.src = reader.result as string;
-        // when the image is loaded it calls the initSampleImage function
-        sampleImg.onload = () => initSampleImage();
-      };
-      reader.readAsDataURL(newVal);
-    }
-  },
-  { immediate: true }
-);
 
 /**
  * watch at the normalizeBy variable to normalize de geneo and show it
