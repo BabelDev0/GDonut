@@ -188,6 +188,15 @@
           </div>
         </div>
       </div>
+      <!-- MADE BY -->
+      <div
+        class="row justify-center full-width absolute-bottom q-mb-sm"
+        style="color: #bb2e29"
+      >
+        <span>
+          made by <a href="https://github.com/BabelDev0">Straccali Leonardo</a>
+        </span>
+      </div>
     </q-drawer>
 
     <!-- MAIN -->
@@ -560,4 +569,8 @@ watch(
 
 <style scoped>
 @import "mathlive/dist/mathlive-fonts.css";
+a {
+  text-decoration: none;
+  color: black;
+}
 </style>
