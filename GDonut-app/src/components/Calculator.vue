@@ -431,8 +431,7 @@ const showGeneo = () => {
             sampleImgMatrix,
             sampleImg,
             canvasSize,
-            groupSelected.value.permutants,
-            groupSelected.value.unknowns
+            groupSelected.value
           );
 
           // matrix with the geneo also with the constant

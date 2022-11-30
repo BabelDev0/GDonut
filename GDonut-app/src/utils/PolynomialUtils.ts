@@ -4,27 +4,24 @@ import { TorusUtils } from "./TorusUtils";
 import { create, all, Parser, factorial } from "mathjs";
 
 export class PolynomialUtils {
-    image: Matrix;
+    sampleImgData: Matrix;
     sampleImg: HTMLImageElement;
     canvasSize: number;
-    permutants: Permutant[];
-    unknowns: Array<{ label: string, value: string }>;
+    group: Group;
     Mimg: number = 255;
     rankPoly: number = 0;
     constToNormalize: number = 0;
 
     constructor(
-        image: Matrix,
+        sampleImgData: Matrix,
         sampleImg: HTMLImageElement,
         canvasSize: number,
-        permutants: Permutant[],
-        unknowns: Array<{ label: string, value: string }>
+        group: Group
     ) {
-        this.image = image;
+        this.sampleImgData = sampleImgData;
         this.sampleImg = sampleImg;
         this.canvasSize = canvasSize;
-        this.permutants = permutants;
-        this.unknowns = unknowns;
+        this.group = group;
     }
 
     /**
@@ -42,7 +39,7 @@ export class PolynomialUtils {
         var result = TorusUtils.putImgInTorus(
             x,
             y,
-            this.image,
+            this.sampleImgData,
             this.canvasSize,
             this.canvasSize
         );
@@ -238,6 +235,12 @@ export class PolynomialUtils {
         return result.to1DArray();
     }
 
+    /**
+     * Returns the polynomial in a form useful to calculate the geneo constant
+     * 
+     * @param polynomial to be converted
+     * @returns polynomial in a gen form
+     */
     LaTeXToPolyGen = (polynomial: string): string => {
         var ply = polynomial;
         // replace all a_1,...,a_n with ""
@@ -274,6 +277,12 @@ export class PolynomialUtils {
         return ply;
     };
 
+    /**
+     * Returns the polynomial in a form useful to evaluate the polynomial
+     * 
+     * @param polynomial to be converted
+     * @returns polynomial in a spc form
+     */
     LaTeXToPolySpc = (polynomial: string, args: string): string => {
         var ply = polynomial;
         // trasform \fract{something}{something} to f(something,something)
@@ -350,6 +359,13 @@ export class PolynomialUtils {
         return ply;
     }
 
+    /**
+     * Returns the polynomial in a form useful to evaluate the polynomial, after setting
+     * polynomial's rank
+     * 
+     * @param polynomial to be converted
+     * @returns polynomial in a geneo form
+     */
     LaTeXToPoly = (polynomial: string): string => {
         console.log("latex " + polynomial);
 
@@ -379,6 +395,12 @@ export class PolynomialUtils {
         return ply;
     }
 
+    /**
+     * Sets the rank of the polynomial or 
+     * the cognate permutant with the function of major rank
+     * 
+     * @param args arguments of the polynomial
+     */
     setRankPoly = (args: string) => {
         var n = 0;
         var match = null;
@@ -389,12 +411,26 @@ export class PolynomialUtils {
         this.rankPoly = n;
     }
 
+    /**
+     * Sets the maximum value reached by the data function image
+     * 
+     * @param matrix 
+     */
     setMimg = (matrix: Matrix) => {
         var matrixAbs = matrix.abs();
         this.Mimg = matrixAbs.max();
     }
 
+    /**
+     * Used to normalize the geneo matrix with a value chosen by the user
+     * 
+     * @param matrix geneo to be normalized
+     * @param constToNormalize constant to normalize the matrix
+     * @returns the geneo normalized by the constant
+     */
     normalizeGeneo = (matrix: Matrix, constToNormalize: number): Matrix => {
+        // in the default case the constant is -1 and the matrix is normalized
+        // to a propotion of 255 as the maximum value of the normalized function
         if (constToNormalize < 0) {
             if (matrix.max() !== 0) {
                 constToNormalize = 255 / matrix.max();
@@ -405,36 +441,56 @@ export class PolynomialUtils {
         }
         this.constToNormalize = constToNormalize;
         var matrixNormalized = matrix.clone();
-        matrixNormalized = matrixNormalized.mul(this.constToNormalize);
+        matrixNormalized = matrixNormalized.mul(constToNormalize);
         return matrixNormalized;
     }
 
-    MCapitolOne = (n: number, ranks: number[]): number => {
+    /**
+     * Returns the M_1 constant of the polynomial, described in the paper
+     * 
+     * @param n rank of the polynomial
+     * @param exps exponents of symmetric functions of the polynomial
+     * @returns teh M_1 constant of the polynomial
+     */
+    MCapitolOne = (n: number, exps: number[]): number => {
         const tempMs = [];
         for (var i = 1; i <= n; i++) {
             tempMs.push(
-                ranks[i - 1]
+                exps[i - 1]
                 * i
-                * Math.pow(this.binom(n, i), ranks[i - 1])
-                * Math.pow(this.Mimg, (i * (ranks[i - 1] - 1)))
+                * Math.pow(this.binom(n, i), exps[i - 1])
+                * Math.pow(this.Mimg, (i * (exps[i - 1] - 1)))
             );
         }
         const m1 = tempMs.reduce((a, b) => Math.max(a, b))
         return m1;
     }
 
-    MCapitolTwo = (n: number, ranks: number[]): number => {
+    /**
+     * Returns the M_2 constant of the polynomial, described in the paper
+     * 
+     * @param n rank of the polynomial
+     * @param exps exponents of symmetric functions of the polynomial
+     * @returns teh M_2 constant of the polynomial
+     */
+    MCapitolTwo = (n: number, exps: number[]): number => {
         const tempMs = [];
         for (var i = 1; i <= n; i++) {
             tempMs.push(
-                Math.pow(this.binom(n, i), ranks[i - 1])
-                * Math.pow(this.Mimg, (i * ranks[i - 1]))
+                Math.pow(this.binom(n, i), exps[i - 1])
+                * Math.pow(this.Mimg, (i * exps[i - 1]))
             );
         }
         const m2 = Math.pow((tempMs.reduce((a, b) => Math.max(a, b))), (n - 1));
         return m2;
     }
 
+    /**
+     * Returns the geneo constant C with which divide the geneo matrix
+     * 
+     * @param polynomial polynomial from which extract the constant
+     * @returns the constant C
+     */
     getGeneoConstant(polynomial: string): number {
 
         var ply = this.LaTeXToPolyGen(polynomial);
@@ -446,6 +502,7 @@ export class PolynomialUtils {
 
         var count = 0;
 
+        // collect the coefficients of the symmetric functions
         while (match = regex.exec(ply)) {
             if (match[1] !== undefined) {
                 coefficients.push(+(match[1]));
@@ -453,16 +510,19 @@ export class PolynomialUtils {
             }
         }
 
+        // fill the exponents of the "cont" symmetric functions with 0
         for (var i = 0; i < count; i++) {
             exponents.push(new Array(n).fill(0));
         }
         count = 0;
 
         while (match = regex.exec(ply)) {
+            // if the coefficient is not defined, I'm still in the same symmetric function
             if (match[1] === undefined) {
                 count--;
             }
 
+            // if the exponent is not specified, it is 1 oderwise it is the specified value
             if (match[4] !== undefined) {
                 exponents[count][parseInt(match[2]) - 1] = +(match[4]);
             }
@@ -473,6 +533,7 @@ export class PolynomialUtils {
             count++;
         }
 
+        // calculate the C with all the M_1 and M_2 constants and the result times n
         var c = 0;
         for (var i = 0; i < coefficients.length; i++) {
             c += Math.abs(coefficients[i])
@@ -499,14 +560,14 @@ export class PolynomialUtils {
         const parser = math.parser();
 
         // parsing permutant
-        this.permutants.forEach((permutant) => {
+        this.group.permutants.forEach((permutant) => {
             switch (permutant.internalName) {
                 case "lin":
                     var values = [0];
                     if (permutant.value) {
                         var tempPermVal = permutant.value;
-                        const x = this.unknowns.find((unknown) => unknown.label === "x");
-                        const y = this.unknowns.find((unknown) => unknown.label === "y");
+                        const x = this.group.unknowns.find((unknown) => unknown.label === "x");
+                        const y = this.group.unknowns.find((unknown) => unknown.label === "y");
                         if (x && y) {
                             tempPermVal = tempPermVal.replace("x", x.value);
                             tempPermVal = tempPermVal.replace("y", y.value);
