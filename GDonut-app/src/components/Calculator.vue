@@ -114,7 +114,6 @@
           "
           keypress-sound="none"
           plonk-sound="none"
-          :disabled="loading"
         >
         </math-field>
       </div>
@@ -231,7 +230,7 @@
                     size="sm"
                     color="primary"
                     icon="print"
-                    @click="download_image()"
+                    @click="download_geneo()"
                     :disable="loading"
                   >
                     <q-tooltip
@@ -423,7 +422,12 @@ function onFileChange(e: any) {
   reader.readAsDataURL(files[0]);
 }
 
-const download_image = async () => {};
+const download_geneo = async () => {
+  const link = document.createElement("a");
+  link.download = "geneo.png";
+  link.href = canvasGeneo.toDataURL();
+  link.click();
+};
 
 const reloadWindow = () => {
   window.location.reload();
