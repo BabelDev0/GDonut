@@ -502,7 +502,6 @@ onMounted(() => {
   canvasSample = document.getElementById("canvasSample");
   canvasGeneo = document.getElementById("canvasGeneo");
   filePicker = document.getElementById("filePicker");
-  console.log("mounted", canvasSample, canvasGeneo, filePicker);
 
   // binds the contents of the math field with the polynomial variable
   if (document.getElementById("formula")) {

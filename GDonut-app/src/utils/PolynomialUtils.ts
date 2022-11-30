@@ -122,9 +122,19 @@ export class PolynomialUtils {
      * @returns the quotient of the division
      */
     divideMatrices(matrices: Matrix[]) {
+        console.log(matrices);
         var result = matrices.reduce((dividend, divisor) => {
+            // check if divisor have some zero value
+            var divisorArray = divisor.to1DArray();
+            var divisorArrayZero = divisorArray.filter((value) => {
+                return value == 0;
+            });
+            if (divisorArrayZero.length > 0) {
+                throw "Divisor have zero value";
+            }
             return Matrix.divide(dividend, divisor);
         });
+        console.log(result);
         return result.to1DArray();
     };
 
