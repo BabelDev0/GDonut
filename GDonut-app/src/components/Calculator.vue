@@ -23,6 +23,7 @@
             color="white"
             icon="cloud_upload"
             @click="filePicker.click()"
+            :disable="loading"
           />
           <q-btn
             flat
@@ -67,6 +68,7 @@
           color="primary"
           icon="keyboard_arrow_down"
           direction="down"
+          :disable="loading"
         >
           <q-fab-action
             v-for="item in groups"
@@ -112,6 +114,7 @@
           "
           keypress-sound="none"
           plonk-sound="none"
+          :disabled="loading"
         >
         </math-field>
       </div>
@@ -160,6 +163,7 @@
           class="w-auto q-mx-xs q-my-xs col-6"
           outlined
           v-model="normalizeBy"
+          :disable="loading"
         >
           <template v-slot:prepend>
             <q-chip color="primary" text-color="white" square>
@@ -175,6 +179,7 @@
               color="primary"
               icon="restore"
               @click="showGeneo()"
+              :disable="loading"
             >
               <q-tooltip
                 style="background-color: #bb2e29"
@@ -227,6 +232,7 @@
                     color="primary"
                     icon="print"
                     @click="download_image()"
+                    :disable="loading"
                   >
                     <q-tooltip
                       style="background-color: #bb2e29"
@@ -271,7 +277,8 @@
                   size="sm"
                   color="primary"
                   icon="rotate_90_degrees_cw"
-                  @click="initSampleImage()"
+                  @click="transformSampleImg('r')"
+                  :disable="loading"
                 >
                   <q-tooltip
                     style="background-color: #bb2e29"
@@ -289,7 +296,8 @@
                   size="sm"
                   color="primary"
                   icon="flip"
-                  @click="initSampleImage()"
+                  @click="transformSampleImg('y')"
+                  :disable="loading"
                 >
                   <q-tooltip
                     style="background-color: #bb2e29"
@@ -308,7 +316,8 @@
                   color="primary"
                   icon="flip"
                   class="rotate-90"
-                  @click="initSampleImage()"
+                  @click="transformSampleImg('x')"
+                  :disable="loading"
                 >
                   <q-tooltip
                     style="background-color: #bb2e29"
@@ -342,6 +351,7 @@ import { DataStructures } from "../assets/dataStructures";
 import { useQuasar } from "quasar";
 import GroupInfoDialog from "./GroupInfoDialog.vue";
 const mfe = new MathfieldElement();
+const loading = ref(false);
 
 // selectable groups
 const groups: Array<Group> = DataStructures.groups;
@@ -361,6 +371,7 @@ var geneoMatrix: Matrix | null;
 
 // use to debounce the geneo matrix calculation
 var timerCallShowGeneo = 0;
+var timerCallNormalize = 0;
 
 // polynomial to be evaluated
 const poly = ref<string>("");
@@ -448,6 +459,7 @@ const showGeneo = () => {
             justShowGeneo = true;
             normalizeBy.value = polyUtils.constToNormalize;
             CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
+            loading.value = false;
           }
         } catch (e) {
           CanvasUtils.clearCanvas(canvasGeneo);
@@ -463,6 +475,7 @@ const showGeneo = () => {
   } else {
     console.log("Sample image not exist");
   }
+  console.log("sono passato");
 };
 
 /**
@@ -471,6 +484,7 @@ const showGeneo = () => {
  * image change during previous processing
  */
 const initSampleImage = () => {
+  console.log("initSampleImage");
   if (sampleImg) {
     var ctx = canvasSample.getContext("2d", { willReadFrequently: true });
     if (ctx) {
@@ -486,6 +500,36 @@ const initSampleImage = () => {
       );
 
       showGeneo();
+    } else {
+      console.log("ctx dosen't exist");
+    }
+  } else {
+    console.log("image dosen't exist");
+  }
+};
+
+/**
+ * method to transform the sampleImage and the geneo throw the buttons
+ */
+const transformSampleImg = (type: string) => {
+  loading.value = true;
+  if (sampleImg) {
+    var ctx = canvasSample.getContext("2d", { willReadFrequently: true });
+    if (ctx) {
+      CanvasUtils.clearCanvas(canvasSample);
+      ctx.translate(Math.floor(canvasSize / 2), Math.floor(canvasSize / 2));
+      if (type === "r") {
+        ctx.rotate((+90 * Math.PI) / 180);
+      } else if (type === "x") {
+        ctx.scale(1, -1);
+      } else if (type === "y") {
+        ctx.scale(-1, 1);
+      }
+      ctx.translate(-Math.floor(canvasSize / 2), -Math.floor(canvasSize / 2));
+      ctx.drawImage(sampleImg, 0, 0, canvasSize, canvasSize);
+      sampleImg.src = canvasSample.toDataURL();
+      ctx.resetTransform();
+      initSampleImage();
     } else {
       console.log("ctx dosen't exist");
     }
@@ -518,14 +562,19 @@ onMounted(() => {
  */
 watch(normalizeBy, () => {
   if (!justShowGeneo) {
-    if (geneoMatrix) {
-      var geneoMatrixNormalized = polyUtils.normalizeGeneo(
-        geneoMatrix,
-        +normalizeBy.value
-      );
-
-      CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
+    if (timerCallNormalize) {
+      clearTimeout(timerCallNormalize);
     }
+    timerCallNormalize = setTimeout(() => {
+      if (geneoMatrix) {
+        var geneoMatrixNormalized = polyUtils.normalizeGeneo(
+          geneoMatrix,
+          +normalizeBy.value
+        );
+
+        CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
+      }
+    }, 200);
   } else {
     justShowGeneo = false;
   }
@@ -537,9 +586,8 @@ watch(normalizeBy, () => {
  * of the function when the user is typing
  */
 watch(
-  poly,
+  [poly, groupSelected],
   () => {
-    //
     if (timerCallShowGeneo) {
       clearTimeout(timerCallShowGeneo);
     }
@@ -547,19 +595,6 @@ watch(
       console.log("show geneo");
       showGeneo();
     }, 200);
-  },
-  { deep: true }
-);
-
-/**
- * watch at the groupSelected variable and call the showGeneo method if the group is changed
- * this method is separated from the watch of the polynomial variable only due to the timer
- */
-watch(
-  groupSelected,
-  () => {
-    console.log("show geneo");
-    showGeneo();
   },
   { deep: true }
 );
