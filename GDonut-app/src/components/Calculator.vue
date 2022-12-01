@@ -23,7 +23,6 @@
             color="white"
             icon="cloud_upload"
             @click="filePicker.click()"
-            :disable="loading"
           />
           <q-btn
             flat
@@ -68,7 +67,6 @@
           color="primary"
           icon="keyboard_arrow_down"
           direction="down"
-          :disable="loading"
         >
           <q-fab-action
             v-for="item in groups"
@@ -162,7 +160,6 @@
           class="w-auto q-mx-xs q-my-xs col-6"
           outlined
           v-model="normalizeBy"
-          :disable="loading"
         >
           <template v-slot:prepend>
             <q-chip color="primary" text-color="white" square>
@@ -178,7 +175,6 @@
               color="primary"
               icon="restore"
               @click="showGeneo()"
-              :disable="loading"
             >
               <q-tooltip
                 style="background-color: #bb2e29"
@@ -253,7 +249,6 @@
                   color="primary"
                   icon="rotate_90_degrees_cw"
                   @click="transformSampleImg('r')"
-                  :disable="loading"
                 >
                   <q-tooltip
                     style="background-color: #bb2e29"
@@ -272,7 +267,6 @@
                   color="primary"
                   icon="flip"
                   @click="transformSampleImg('y')"
-                  :disable="loading"
                 >
                   <q-tooltip
                     style="background-color: #bb2e29"
@@ -292,7 +286,6 @@
                   icon="flip"
                   class="rotate-90"
                   @click="transformSampleImg('x')"
-                  :disable="loading"
                 >
                   <q-tooltip
                     style="background-color: #bb2e29"
@@ -325,11 +318,7 @@ import { MathfieldElement } from "mathlive";
 import { DataStructures } from "../assets/dataStructures";
 import { useQuasar } from "quasar";
 import GroupInfoDialog from "./GroupInfoDialog.vue";
-import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
-import { save } from "@tauri-apps/api/dialog";
 const mfe = new MathfieldElement();
-const loading = ref(false);
-
 // selectable groups
 const groups: Array<Group> = DataStructures.groups;
 // size of all canvases (they are all square)
@@ -434,7 +423,6 @@ const showGeneo = () => {
             justShowGeneo = true;
             normalizeBy.value = polyUtils.constToNormalize;
             CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
-            loading.value = false;
           }
         } catch (e) {
           CanvasUtils.clearCanvas(canvasGeneo);
@@ -450,7 +438,6 @@ const showGeneo = () => {
   } else {
     console.log("Sample image not exist");
   }
-  console.log("sono passato");
 };
 
 /**
@@ -459,7 +446,6 @@ const showGeneo = () => {
  * image change during previous processing
  */
 const initSampleImage = () => {
-  console.log("initSampleImage");
   if (sampleImg) {
     var ctx = canvasSample.getContext("2d", { willReadFrequently: true });
     if (ctx) {
@@ -487,8 +473,7 @@ const initSampleImage = () => {
  * method to transform the sampleImage and the geneo throw the buttons
  */
 const transformSampleImg = (type: string) => {
-  loading.value = true;
-  if (sampleImg) {
+  if (sampleImg && sampleImgMatrix) {
     var ctx = canvasSample.getContext("2d", { willReadFrequently: true });
     if (ctx) {
       CanvasUtils.clearCanvas(canvasSample);
