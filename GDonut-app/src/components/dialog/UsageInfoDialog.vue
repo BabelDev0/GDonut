@@ -18,9 +18,9 @@
       <div class="row justify-center">
         <p style="font-size: 36px">Description of the application</p>
         <p class="q-mx-lg text-justify" style="font-size: 18px">
-          The program permmits to display a GENEO generated through the
-          selection of a group, a permutant of the group and an image as an
-          input data function.<span class="q-ml-xs"
+          The program allows to display a GENEO generated through the selection
+          of a group, a permutant of the group and an image as input data
+          function.<span class="q-ml-xs"
             >The result is then normalized through a constant that can be
             changed by the user.</span
           >
@@ -139,7 +139,7 @@
             @click="usageStep = 4"
           >
             <p style=" font-size: 18px">
-              with the buttons<q-icon
+              With the buttons<q-icon
                 name="rotate_90_degrees_cw"
                 size="sm"
                 color="primary"
