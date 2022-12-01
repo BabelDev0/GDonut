@@ -24,7 +24,9 @@
           <q-step
             :name="1"
             title="Group Info"
-            icon="settings"
+            icon="group_work"
+            active-icon="group_work"
+            done-icon="group_work"
             :done="groupStep > 1"
           >
             <q-card-section>
@@ -36,7 +38,7 @@
               <div v-if="groupSelectedRef.unknowns.length > 0">
                 <p>
                   <span class="text-weight-bold">Unknowns : </span>assigns the
-                  variables to be used by permutants
+                  variables that will be used by permutants
                 </p>
                 <div class="full-width row justify-center">
                   <q-input
@@ -47,6 +49,7 @@
                     v-model="unknown.value"
                     :key="unknown.label"
                     readonly
+                    style="width: 200px"
                   >
                     <template v-slot:prepend>
                       <q-chip color="primary" text-color="white" square>
@@ -84,16 +87,27 @@
                   </q-input>
                 </div>
               </div>
+              <div>
+                <p class="text-center" style="color: #bb2e29; font-size: 16px">
+                  actually the a_n are the respective permutants h_n already
+                  applied to the input function
+                </p>
+              </div>
             </q-card-section>
           </q-step>
 
           <q-step
             :name="2"
             title="Write polynomial"
-            icon="create_new_folder"
+            icon="functions"
+            active-icon="functions"
+            done-icon="functions"
             :done="groupStep > 2"
           >
-            <div class="full-width row justify-center q-pa-lg">
+            <div
+              class="full-width row justify-center q-pa-lg"
+              style="font-size: 17px"
+            >
               <h6 class="q-mt-xs q-mb-md text-center">
                 Write your polynomial in the input box
               </h6>
@@ -114,43 +128,59 @@
               >
                 {{ samplePoly }}
               </math-field>
-              <ul>
-                <li class="q-mt-sm">
-                  <span class="text-weight-bold">
-                    <span style="color: #bb2e29">Use</span>
-                    \sigma_n as the n-th elementary symmetric polynomial
-                  </span>
-                </li>
-                <li class="q-mt-sm">
-                  <span class="text-weight-bold">
-                    <span style="color: #bb2e29">Use</span>
-                    a_n as the n-th permutant cognugate with the data function.
-                  </span>
-                </li>
-                <li class="q-mt-sm">
-                  <span class="text-weight-bold">
-                    <span style="color: #bb2e29">Note</span>
-                    don't omit any operand such as the * in multiplication
-                  </span>
-                </li>
-                <li class="q-mt-sm">
-                  <span class="text-weight-bold">
-                    <span style="color: #bb2e29">Note</span>
-                    if you want to perform division multiply by the reciprocal
-                  </span>
-                </li>
-              </ul>
-              <p class="text-center text-weight-bold" style="color: #bb2e29">
-                if the polynomial is formed incorrectly, the geneo canvas will
-                turn white
-              </p>
+
+              <div>
+                <p class="q-mt-md text-center">
+                  the polynomial must be written in latex
+                </p>
+                <ul>
+                  <li class="q-mt-sm">
+                    <span>
+                      <span style="color: #bb2e29">Use</span>
+                      \sigma_n as the n-th elementary symmetric polynomial
+                    </span>
+                  </li>
+                  <li class="q-mt-sm">
+                    <span>
+                      <span style="color: #bb2e29">Use</span>
+                      a_n as the h_n already applied to the input function
+                    </span>
+                  </li>
+                  <li class="q-mt-sm">
+                    <span>
+                      <span style="color: #bb2e29">Note</span>
+                      don't omit any operand such as the * in multiplication
+                    </span>
+                  </li>
+                  <li class="q-mt-sm">
+                    <span>
+                      <span style="color: #bb2e29">Note</span>
+                      if you want to perform division multiply by the reciprocal
+                    </span>
+                  </li>
+                  <li class="q-mt-sm">
+                    <span>
+                      <span style="color: #bb2e29">Note</span>
+                      be very careful when writing in the subscript of elements
+                      because you may unintentionally continue writing the
+                      remainder in subscript e.g. a_{1,a_2} instead a_1,a_2
+                    </span>
+                  </li>
+                </ul>
+                <p class="text-center" style="color: #bb2e29">
+                  if the polynomial is formed incorrectly, the geneo canvas will
+                  turn white
+                </p>
+              </div>
             </div>
           </q-step>
 
           <q-step
             :name="3"
             title="Normalize"
-            icon="create_new_folder"
+            icon="tune"
+            active-icon="tune"
+            done-icon="tune"
             :done="groupStep > 2"
           >
             <div class="full-width row justify-center q-pa-lg">
@@ -184,11 +214,10 @@
                   </div>
                 </div>
 
-                <p class="text-center q-mt-md">
-                  in order to show the geneo we apply a normalisation operation,
-                  it is possible to vary this value to obtain different views.
-                  The button on the right reapplies the default normalisation
-                  constant
+                <p class="text-center q-mt-md" style="font-size: 17px">
+                  in order to show the geneo we apply a normalization, it is
+                  possible to change the normalization constant. The button on
+                  the right applies the default normalization constant
                 </p>
               </div>
             </div>
@@ -235,7 +264,8 @@ const props = defineProps({
 const groupStep = ref(1);
 
 // used to show the autocomplete polynomial in the second step
-const sample = "-\\sigma_1(a_1,a_2)+3\\cdot\\sigma_2(a_1,a_2)^2";
+const sample =
+  "-\\sigma_1(a_1,a_2)+3\\cdot\\sigma_2(a_1,a_2)^2-6\\cdot\\sigma_1(a_1,a_2)";
 const samplePoly = ref("");
 
 const stateWrite = ref(false);
@@ -262,7 +292,7 @@ const writeSamplePoly = () => {
         writeSamplePoly();
       }, 2000);
     }
-  }, 200);
+  }, 250);
 };
 
 watch(groupStep, () => {
