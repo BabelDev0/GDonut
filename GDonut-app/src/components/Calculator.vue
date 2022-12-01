@@ -208,45 +208,21 @@
       <!-- GENEO CANVAS -->
       <div class="full-width row justify-center q-mt-sm">
         <div class="column justify-start q-mt-md">
-          <div class="">
+          <div class="q-mr-lg q-pr-sm">
             <div class="row">
               <!-- CANVAS COMPONENT -->
-              <div class="col-11">
-                <canvas
-                  class="q-mb-xs"
-                  id="canvasGeneo"
-                  :width="canvasSize"
-                  :height="canvasSize"
-                  style="border: 1px solid #bb2e29"
-                >
-                  Your browser does not support the HTML5 canvas tag.
-                </canvas>
-              </div>
-              <!-- PRINTER BUTTON -->
-              <div class="col-1">
-                <div class="q-my-sm q-ml-sm">
-                  <q-btn
-                    round
-                    size="sm"
-                    color="primary"
-                    icon="print"
-                    @click="download_geneo()"
-                    :disable="loading"
-                  >
-                    <q-tooltip
-                      style="background-color: #bb2e29"
-                      class="text-body2"
-                      anchor="center right"
-                      self="center left"
-                    >
-                      print image
-                    </q-tooltip>
-                  </q-btn>
-                </div>
-              </div>
+              <canvas
+                class="q-mb-xs"
+                id="canvasGeneo"
+                :width="canvasSize"
+                :height="canvasSize"
+                style="border: 1px solid #bb2e29"
+              >
+                Your browser does not support the HTML5 canvas tag.
+              </canvas>
             </div>
             <!-- CANVAS SIZE LABEL -->
-            <div class="row justify-start">
+            <div class="row justify-start q-mt-xs">
               <small>{{ canvasSize }} X {{ canvasSize }} </small>
             </div>
           </div>
@@ -349,6 +325,8 @@ import { MathfieldElement } from "mathlive";
 import { DataStructures } from "../assets/dataStructures";
 import { useQuasar } from "quasar";
 import GroupInfoDialog from "./GroupInfoDialog.vue";
+import { writeBinaryFile, BaseDirectory } from "@tauri-apps/api/fs";
+import { save } from "@tauri-apps/api/dialog";
 const mfe = new MathfieldElement();
 const loading = ref(false);
 
@@ -421,13 +399,6 @@ function onFileChange(e: any) {
   };
   reader.readAsDataURL(files[0]);
 }
-
-const download_geneo = async () => {
-  const link = document.createElement("a");
-  link.download = "geneo.png";
-  link.href = canvasGeneo.toDataURL();
-  link.click();
-};
 
 const reloadWindow = () => {
   window.location.reload();
