@@ -30,7 +30,7 @@
             size="lg"
             color="white"
             icon="info"
-            @click="showGroupInfoDialog()"
+            @click="showUsageInfoDialog()"
           />
           <q-btn
             flat
@@ -317,7 +317,8 @@ import { PolynomialUtils } from "../utils/PolynomialUtils";
 import { MathfieldElement } from "mathlive";
 import { DataStructures } from "../assets/dataStructures";
 import { useQuasar } from "quasar";
-import GroupInfoDialog from "./GroupInfoDialog.vue";
+import GroupInfoDialog from "./dialog/GroupInfoDialog.vue";
+import UsageInfoDialog from "./dialog/UsageInfoDialog.vue";
 const mfe = new MathfieldElement();
 // selectable groups
 const groups: Array<Group> = DataStructures.groups;
@@ -374,6 +375,11 @@ function showGroupInfoDialog() {
     componentProps: {
       groupSelected: groupSelected,
     },
+  });
+}
+function showUsageInfoDialog() {
+  $q.dialog({
+    component: UsageInfoDialog,
   });
 }
 

@@ -200,7 +200,7 @@
                 v-if="groupStep < 3"
                 @click="groupStep++"
                 color="primary"
-                :label="groupStep === 4 ? 'Finish' : 'Continue'"
+                label="Continue"
               />
               <q-btn
                 v-if="groupStep > 1"
