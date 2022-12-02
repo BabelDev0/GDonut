@@ -11,6 +11,13 @@
         margin-left: auto;
         margin-right: auto;
       }
+      .appPrev {
+        margin-top: 5rem;
+      }
+      .prev {
+        display: block;
+        width: 90%;
+      }
       .title {
         font-size: 3rem;
         text-align: center;
@@ -18,7 +25,7 @@
       .selectOS {
         font-size: 2rem;
         text-align: center;
-        margin-top: 5rem;
+        margin-top: 2rem;
       }
       .dropbtn {
         background-color: #bb2e29;
@@ -78,6 +85,27 @@
         border-style: solid;
         border-color: #bb2e29;
       }
+
+      .item1 {
+        grid-area: main;
+      }
+      .item2 {
+        grid-area: right;
+        width: 35rem;
+        padding-right: 3rem;
+      }
+
+      .grid-container {
+        display: grid;
+        grid-template-areas:
+          "main right"
+          "main right";
+      }
+
+      .grid-container > div {
+        text-align: center;
+        font-size: 30px;
+      }
     </style>
   </head>
   <body>
@@ -128,6 +156,30 @@
           <div class="dropdown-content">
             <a href="#">Debian</a>
           </div>
+        </div>
+      </div>
+    </div>
+    <div class="appPrev">
+      <div class="grid-container">
+        <div class="item1">
+          <img class="prev" src="./GDonut-app/public/app_prev.png" />
+        </div>
+        <div class="item2">
+          <p>
+            Program allows you to display a GENEO generated through the
+            selection of a group, a permutant of the group and an image as input
+            data function.
+          </p>
+          <p>
+            The result is then normalized through a constant that can be changed
+            by the user.
+          </p>
+          <p>
+            The software obtains the result shown through the application of
+            theorems and mathematical settings described by the paper "On the
+            Construction of Group Equivariant Non-Expansive Operators via
+            Permutants and Symmetric Functions"
+          </p>
         </div>
       </div>
     </div>
