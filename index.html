@@ -5,8 +5,131 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GDonut Home</title>
+    <style>
+      .logo {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .title {
+        font-size: 3rem;
+        text-align: center;
+      }
+      .selectOS {
+        font-size: 2rem;
+        text-align: center;
+        margin-top: 5rem;
+      }
+      .dropbtn {
+        background-color: #bb2e29;
+        color: white;
+        padding: 16px;
+        font-size: 16px;
+        border: none;
+        width: 10rem;
+        height: 5rem;
+        border-radius: 20px;
+      }
+
+      .dropdown {
+        position: relative;
+        display: inline-block;
+      }
+
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        border: 1px;
+        border-style: solid;
+        border-color: #bb2e29;
+        border-radius: 20px;
+        width: 15rem;
+        left: -25%;
+        background-color: #f1f1f1;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 1;
+      }
+
+      .dropdown-content a {
+        color: #bb2e29;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        border-radius: 20px;
+      }
+
+      .dropdown-content a:hover {
+        background-color: #bb2e29;
+        color: white;
+      }
+
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+      .pre:hover .dropdown-content {
+        display: block;
+      }
+
+      .dropdown:hover .dropbtn {
+        background-color: white;
+        color: #bb2e29;
+        border: 1px;
+        border-style: solid;
+        border-color: #bb2e29;
+      }
+    </style>
   </head>
   <body>
-    <h1>GDonut</h1>
+    <div>
+      <img
+        class="logo"
+        src="./GDonut-app/src-tauri/icons/Square150x150Logo.png"
+      />
+    </div>
+    <div class="selectOS">
+      <h1 class="title">Select your operating system and download GDonut</h1>
+
+      <!-- Three button dropdown for macOs windows and Linux -->
+      <div class="dropdown">
+        <button class="dropbtn">MacOs</button>
+        <div .class="pre" style="padding-top: 5px">
+          <div class="dropdown-content">
+            <a
+              href="./GDonut-app/src-tauri/publish/macOs/GDonut-app_0.1.0_aarch64.dmg"
+              download
+              >Apple silicon</a
+            >
+            <a
+              href="./GDonut-app/src-tauri/publish/macOs/GDonut-app_0.1.0_x64.dmg"
+              download
+              >Intel-based</a
+            >
+            <a
+              href="./GDonut-app/src-tauri/publish/macOs/GDonut-app_0.1.0_universal.dmg"
+              download
+              >universal macOS binary</a
+            >
+          </div>
+        </div>
+      </div>
+      <div class="dropdown">
+        <button class="dropbtn">Windows</button>
+        <div .class="pre" style="padding-top: 5px">
+          <div class="dropdown-content">
+            <a href="#">Windows x64</a>
+            <a href="#">Windows x32</a>
+          </div>
+        </div>
+      </div>
+      <div class="dropdown">
+        <button class="dropbtn">Linux</button>
+        <div .class="pre" style="padding-top: 5px">
+          <div class="dropdown-content">
+            <a href="#">Debian</a>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
