@@ -12,21 +12,12 @@
   },
   "tauri": {
     "allowlist": {
-      "all": true,
+      "all": false,
       "fs": {
-        "all": true,
-        "readFile": true,
-        "writeFile": true,
-        "readDir": true,
-        "copyFile": true,
-        "createDir": true,
-        "removeDir": true,
-        "removeFile": true,
-        "renameFile": true,
-        "exists": true
+        "all": false
       },
       "path": {
-        "all": true
+        "all": false
       }
     },
     "bundle": {
@@ -71,10 +62,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 900,
         "resizable": true,
         "title": "GDonut",
-        "width": 800
+        "width": 1000
       }
     ]
   }
