@@ -404,45 +404,44 @@ const reloadWindow = () => {
  * normalise it and display it on the canvas
  */
 const showGeneo = () => {
-  if (sampleImgMatrix) {
-    if (groupSelected.value.label !== "") {
-      if (poly.value != "") {
-        try {
-          polyUtils = new PolynomialUtils(
-            sampleImgMatrix,
-            sampleImg,
-            canvasSize,
-            groupSelected.value
-          );
-
-          // matrix with the geneo also with the constant
-          geneoMatrix = polyUtils.evaluate(poly.value);
-          console.log("Geneo", geneoMatrix);
-
-          if (geneoMatrix) {
-            // matrix with the geneo normalized by (default == -1)
-            var geneoMatrixNormalized = polyUtils.normalizeGeneo(
-              geneoMatrix,
-              -1
-            );
-            console.log("Normalized", geneoMatrixNormalized);
-            justShowGeneo = true;
-            normalizeBy.value = polyUtils.constToNormalize;
-            CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
-          }
-        } catch (e) {
-          CanvasUtils.clearCanvas(canvasGeneo);
-          console.log(e);
-          return;
-        }
-      } else {
-        CanvasUtils.clearCanvas(canvasGeneo);
-      }
-    } else {
-      console.log("Group not selected");
-    }
-  } else {
+  if (!sampleImgMatrix) {
     console.log("Sample image not exist");
+    return;
+  }
+  if (groupSelected.value.label === "") {
+    console.log("Group not selected");
+    return;
+  }
+  if (poly.value === "") {
+    console.log("Polynomial string is blank");
+    CanvasUtils.clearCanvas(canvasGeneo);
+    return;
+  }
+
+  try {
+    polyUtils = new PolynomialUtils(
+      sampleImgMatrix,
+      sampleImg,
+      canvasSize,
+      groupSelected.value
+    );
+
+    // matrix with the geneo also with the constant
+    geneoMatrix = polyUtils.evaluate(poly.value);
+    console.log("Geneo", geneoMatrix);
+
+    if (geneoMatrix) {
+      // matrix with the geneo normalized by (default == -1)
+      var geneoMatrixNormalized = polyUtils.normalizeGeneo(geneoMatrix, -1);
+      console.log("Normalized", geneoMatrixNormalized);
+      justShowGeneo = true;
+      normalizeBy.value = polyUtils.constToNormalize;
+      CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
+    }
+  } catch (e) {
+    CanvasUtils.clearCanvas(canvasGeneo);
+    console.log(e);
+    return;
   }
 };
 
