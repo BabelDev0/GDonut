@@ -7,7 +7,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "GDonut-app",
+    "productName": "GDonut",
     "version": "0.1.0"
   },
   "tauri": {
