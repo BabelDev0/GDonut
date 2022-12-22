@@ -37,8 +37,8 @@
               </div>
               <div v-if="groupSelectedRef.unknowns.length > 0">
                 <p>
-                  <span class="text-weight-bold">Unknowns : </span>assigns the
-                  variables that will be used by permutants
+                  <span class="text-weight-bold">Unknowns : </span>Be sure to
+                  assign the variables that will be used by the permutant
                 </p>
                 <div class="full-width row justify-center">
                   <q-input
@@ -61,8 +61,11 @@
               </div>
               <div class="q-mt-md">
                 <p>
-                  <span class="text-weight-bold">Permutants : </span>list of
-                  permutants belonging to the group
+                  <span class="text-weight-bold"
+                    >List of variables used when writing the polynomial.
+                  </span>
+                  Each of these variables is the result of the input function
+                  composed with one of the elements belonging to the permutant
                 </p>
                 <div class="full-width row justify-center">
                   <q-input
@@ -86,12 +89,6 @@
                     </template>
                   </q-input>
                 </div>
-              </div>
-              <div>
-                <p class="text-center" style="color: #bb2e29; font-size: 16px">
-                  actually the a_n are the respective permutants h_n already
-                  applied to the input function
-                </p>
               </div>
             </q-card-section>
           </q-step>
@@ -143,7 +140,9 @@
                   <li class="q-mt-sm">
                     <span>
                       <span style="color: #bb2e29">Use</span>
-                      a_n as the h_n already applied to the input function
+                      a_n as the variables corresponsive to the result obtained
+                      from the action of the permutant elements on the input
+                      image
                     </span>
                   </li>
                   <li class="q-mt-sm">
