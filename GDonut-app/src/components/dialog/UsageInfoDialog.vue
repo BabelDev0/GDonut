@@ -77,7 +77,7 @@
           >
             <p style=" font-size: 18px">
               Select a group from the list of groups that you find in the upper
-              right corner
+              left corner
               <span
                 class="q-mx-xs q-pa-xs"
                 style="
@@ -162,7 +162,7 @@
               image.
             </p>
             <p style=" font-size: 18px">
-              this transfromation is also reflected on the top pane where we
+              these transformations is also reflected on the top pane where we
               show the result of the operation
             </p>
           </q-step>
