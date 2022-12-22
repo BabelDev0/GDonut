@@ -21,8 +21,8 @@
           The program allows to display a GENEO generated through the selection
           of a group, a permutant of the group and an image as input data
           function.<span class="q-ml-xs"
-            >The result is then normalized through a constant that can be
-            changed by the user.</span
+            >The result is then scaled through a constant that can be changed by
+            the user.</span
           >
         </p>
         <p class="q-mx-lg text-justify" style="font-size: 18px">

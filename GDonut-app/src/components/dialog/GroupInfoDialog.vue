@@ -177,7 +177,7 @@
 
           <q-step
             :name="3"
-            title="Normalize"
+            title="Scale"
             icon="tune"
             active-icon="tune"
             done-icon="tune"
@@ -185,7 +185,7 @@
           >
             <div class="full-width row justify-center q-pa-lg">
               <div>
-                <h6 class="q-mt-xs q-mb-xs text-center">Normalize</h6>
+                <h6 class="q-mt-xs q-mb-xs text-center">Scale</h6>
 
                 <div class="full-width row justify-center q-mt-md">
                   <q-input
@@ -197,7 +197,7 @@
                   >
                     <template v-slot:prepend>
                       <q-chip color="primary" text-color="white" square>
-                        Normalize by
+                        Scale
                       </q-chip>
                     </template>
                   </q-input>
@@ -215,9 +215,9 @@
                 </div>
 
                 <p class="text-center q-mt-md" style="font-size: 17px">
-                  in order to show the geneo we apply a normalization, it is
-                  possible to change the normalization constant. The button on
-                  the right applies the default normalization constant
+                  in order to show the geneo we apply a scale. It is possible to
+                  change the scale constant. The button on the right applies the
+                  default scale constant
                 </p>
               </div>
             </div>
