@@ -162,9 +162,7 @@
           v-model="normalizeBy"
         >
           <template v-slot:prepend>
-            <q-chip color="primary" text-color="white" square>
-              Normalize by
-            </q-chip>
+            <q-chip color="primary" text-color="white" square> Scale </q-chip>
           </template>
         </q-input>
         <div class="col-1">
@@ -182,7 +180,7 @@
                 anchor="center right"
                 self="center left"
               >
-                restore normalaize constant
+                restore scale constant
               </q-tooltip>
             </q-btn>
           </div>
