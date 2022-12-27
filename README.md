@@ -9,9 +9,9 @@
 
 ## Introduction
 
-Welcome to the repository of GDonut! This programme is designed to help students visually explore the method for constructing non-expansive equivariant group operators (GENEOs) through the input of permutants and symmetrical functions.
+Welcome to the repository of GDonut! This program is designed to help students visually explore the method for constructing non-expansive equivariant group operators (GENEOs) through the input of permutants and symmetrical functions.
 
-A GENEO, or non-expansive equivariant group operator, is a mathematical construct that can be applied to construct a new paradigm of learning networks, based on the formal study of the topological space of these operators. 
+A GENEO, or non-expansive equivariant group operator, is a mathematical construct that can be applied to construct a new paradigm of learning networks, based on the formal study of the topological space of these operators.
 
 Equivariance refers to the property of a function or operator that remains unchanged when applied to a transformed version of its input. In other words, if a function or operator is equivariant, it will give the same output no matter how its input is transformed.
 
@@ -23,7 +23,7 @@ References
 
     Non-Expansive Equivariant Group Operators for Artificial Intelligence
 
-Programme Features
+program Features
 
     Select groups and permutants
     Insert symmetrical functions
@@ -43,5 +43,4 @@ Contributions
 
 We welcome contributions to the program. If you have any suggestions or find any bugs, please open an issue or submit a pull request.
 
-
-Thank you for using the GDount Programme!
+Thank you for using the GDount program!
