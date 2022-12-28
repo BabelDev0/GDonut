@@ -176,7 +176,7 @@
 
 					<q-step
 						:name="3"
-						title="Scale"
+						title="Linear transformation"
 						icon="tune"
 						active-icon="tune"
 						done-icon="tune"
@@ -184,39 +184,28 @@
 					>
 						<div class="full-width row justify-center q-pa-lg">
 							<div>
-								<h6 class="q-mt-xs q-mb-xs text-center">Scale</h6>
+								<h6 class="q-mt-xs q-mb-xs text-center">
+									Linear transformation
+								</h6>
 
-								<div class="full-width row justify-center q-mt-md">
-									<q-input
-										square
-										class="w-auto q-mx-xs q-my-xs col-6"
-										outlined
-										v-model="normalizeBy"
-										readonly
-									>
-										<template v-slot:prepend>
-											<q-chip color="primary" text-color="white" square>
-												Scale
-											</q-chip>
-										</template>
-									</q-input>
-									<div class="col-1">
-										<div class="q-mt-md q-ml-sm">
-											<q-btn
-												round
-												size="sm"
-												color="primary"
-												icon="restore"
-												@click=""
-											/>
-										</div>
-									</div>
-								</div>
-
-								<p class="text-center q-mt-md" style="font-size: 17px">
-									in order to show the geneo we apply a scale. It is possible to
-									change the scale constant. The button on the right applies the
-									default scale constant
+								<p class="text-justify q-mt-md" style="font-size: 17px">
+									In order to display the result, we need to map the range of
+									values in the result matrix to a range that can be displayed
+									on a screen. This is done by mapping the range [m, M], where m
+									is the minimum value of the pixel belonging to the result
+									matrix and M is the maximum value, to the range [0, 255].
+								</p>
+								<p class="text-justify q-mt-md" style="font-size: 17px">
+									This is done by the program by mapping the range [m, M] to the
+									range [0, 255], where m is the minimum value of the pixel
+									belonging to the result matrix and M is the maximum value.
+								</p>
+								<p class="text-justify q-mt-md" style="font-size: 17px">
+									By mapping the range of values in the result matrix to the
+									range [0, 255], we can ensure to see the full range of colors
+									and details in the image, rather than having the image appear
+									as a flat black or white due to the overflow of values outside
+									of the range that can be displayed.
 								</p>
 							</div>
 						</div>
