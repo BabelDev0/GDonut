@@ -10,7 +10,6 @@ export class PolynomialUtils {
     group: Group;
     Mimg: number = 255;
     rankPoly: number = 0;
-    constToNormalize: number = 0;
 
     constructor(
         sampleImgData: Matrix,
@@ -432,27 +431,25 @@ export class PolynomialUtils {
     }
 
     /**
-     * Used to normalize the geneo matrix with a value chosen by the user
+     * Used to map the geneo matrix in the rage [0,255] in oreder to display it
      * 
-     * @param matrix geneo to be normalized
-     * @param constToNormalize constant to normalize the matrix
-     * @returns the geneo normalized by the constant
+     * @param matrix geneo to be transformed
+     * @returns geneo matrix mapped in the rage [0,255] in oreder to display it
      */
-    normalizeGeneo = (matrix: Matrix, constToNormalize: number): Matrix => {
-        // in the default case the constant is -1 and the matrix is normalized
-        // to a propotion of 255 as the maximum value of the normalized function
-        if (constToNormalize < 0) {
-            if (matrix.max() !== 0) {
-                constToNormalize = 255 / matrix.max();
-            }
-            else {
-                constToNormalize = 1;
+    geneoIn255 = (matrix: Matrix): Matrix => {
+        var M = matrix.max();
+        var m = matrix.min();
+
+
+        var matrixIn255 = matrix.clone();
+
+        for (var i = 0; i < matrixIn255.rows; i++) {
+            for (var j = 0; j < matrixIn255.columns; j++) {
+                matrixIn255.set(i, j, (matrix.get(i, j) - m) * 255 / (M - m));
             }
         }
-        this.constToNormalize = constToNormalize;
-        var matrixNormalized = matrix.clone();
-        matrixNormalized = matrixNormalized.mul(constToNormalize);
-        return matrixNormalized;
+
+        return matrixIn255;
     }
 
     /**
@@ -653,6 +650,8 @@ export class PolynomialUtils {
             if (geneoConst != 0) {
                 matrixResult = matrixResult.div(geneoConst);
             }
+            // map the result in the interval [0, 255]
+            matrixResult = this.geneoIn255(matrixResult);
             parser.clear();
             return matrixResult;
         }

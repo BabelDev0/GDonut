@@ -160,42 +160,6 @@
 					</template>
 				</q-input>
 			</div>
-			<!-- NORMALIZE -->
-			<div
-				v-if="groupSelected.label !== ''"
-				class="full-width row justify-center q-pt-md"
-			>
-				<q-input
-					square
-					class="w-auto q-mx-xs q-my-xs col-6"
-					outlined
-					v-model="normalizeBy"
-				>
-					<template v-slot:prepend>
-						<q-chip color="primary" text-color="white" square> Scale </q-chip>
-					</template>
-				</q-input>
-				<div class="col-1">
-					<div class="q-mt-md q-ml-sm">
-						<q-btn
-							round
-							size="sm"
-							color="primary"
-							icon="restore"
-							@click="showGeneo()"
-						>
-							<q-tooltip
-								style="background-color: #bb2e29"
-								class="text-body2"
-								anchor="center right"
-								self="center left"
-							>
-								restore scale constant
-							</q-tooltip>
-						</q-btn>
-					</div>
-				</div>
-			</div>
 			<!-- MADE BY -->
 			<div
 				class="row justify-center full-width absolute-bottom q-mb-sm"
@@ -346,7 +310,6 @@ var geneoMatrix: Matrix | null;
 
 // use to debounce the geneo matrix calculation
 var timerCallShowGeneo = 0;
-var timerCallNormalize = 0;
 
 // polynomial to be evaluated
 const poly = ref<string>("");
@@ -358,14 +321,8 @@ const leftDrawerOpen = true;
 // class use to evaluate the polynomial and generate the geneo
 var polyUtils: PolynomialUtils;
 
-// variable used to detect whether the showGeneo method has just been executed
-var justShowGeneo = true;
-
 // variable used to trigger the picker of the sample image
 var filePicker: any;
-
-// variable used to normalize the geneo by different values from the default
-const normalizeBy = ref(0);
 
 // group selected by the user
 const groupSelected = ref<Group>({
@@ -408,8 +365,7 @@ const reloadWindow = () => {
 };
 
 /**
- * method to calculate the geneo
- * normalise it and display it on the canvas
+ * method to calculate the geneo matrix and paint it on the canvas
  */
 const showGeneo = () => {
 	if (!sampleImgMatrix) {
@@ -434,17 +390,12 @@ const showGeneo = () => {
 			groupSelected.value
 		);
 
-		// matrix with the geneo also with the constant
+		// Geneo matrix already mapped to [0,255] range
 		geneoMatrix = polyUtils.evaluate(poly.value);
 		console.log("Geneo", geneoMatrix);
 
 		if (geneoMatrix) {
-			// matrix with the geneo normalized by (default == -1)
-			var geneoMatrixNormalized = polyUtils.normalizeGeneo(geneoMatrix, -1);
-			console.log("Normalized", geneoMatrixNormalized);
-			justShowGeneo = true;
-			normalizeBy.value = polyUtils.constToNormalize;
-			CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
+			CanvasUtils.drawMatrix(geneoMatrix, canvasGeneo);
 		}
 	} catch (e) {
 		CanvasUtils.clearCanvas(canvasGeneo);
@@ -525,31 +476,6 @@ onMounted(() => {
 		document.getElementById("formula")!.addEventListener("input", (ev: any) => {
 			poly.value = ev.target.value;
 		});
-	}
-});
-
-/**
- * watch at the normalizeBy variable to normalize de geneo and show it
- * if the normalizeBy is changed,
- * the method prevents to run if the showGeneo method has just been executed
- */
-watch(normalizeBy, () => {
-	if (!justShowGeneo) {
-		if (timerCallNormalize) {
-			clearTimeout(timerCallNormalize);
-		}
-		timerCallNormalize = setTimeout(() => {
-			if (geneoMatrix) {
-				var geneoMatrixNormalized = polyUtils.normalizeGeneo(
-					geneoMatrix,
-					+normalizeBy.value
-				);
-
-				CanvasUtils.drawMatrix(geneoMatrixNormalized, canvasGeneo);
-			}
-		}, 200);
-	} else {
-		justShowGeneo = false;
 	}
 });
 

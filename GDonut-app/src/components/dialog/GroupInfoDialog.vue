@@ -257,7 +257,6 @@ const sample =
 const samplePoly = ref("");
 
 const stateWrite = ref(false);
-const normalizeBy = ref(0);
 const groupSelectedRef = ref(props.groupSelected);
 
 // REQUIRED by dialog plugin

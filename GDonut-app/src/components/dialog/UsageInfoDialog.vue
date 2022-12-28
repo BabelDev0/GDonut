@@ -21,8 +21,9 @@
 					The program allows to display a GENEO generated through the selection
 					of a group, a permutant of the group and an image as input data
 					function.<span class="q-ml-xs"
-						>The result is then scaled through a constant that can be changed by
-						the user.</span
+						>The resulting GENEO is then map in the range [0,255] doing so we
+						can ensure to see the full range of colors, rather than having the
+						image appear as a flat black or white</span
 					>
 				</p>
 				<p class="q-mx-lg text-justify" style="font-size: 18px">
