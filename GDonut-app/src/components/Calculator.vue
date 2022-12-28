@@ -99,7 +99,17 @@
 				</div>
 			</div>
 			<!-- POLY -->
-			<div class="full-width row justify-center">
+			<div
+				class="full-width"
+				style="display: flex; align-items: center; justify-content: flex-start"
+			>
+				<span
+					v-if="poly == ''"
+					class="absolute q-pl-sm"
+					style="color: grey; font-size: medium"
+				>
+					Enter your formula here
+				</span>
 				<math-field
 					id="formula"
 					class="full-width"
