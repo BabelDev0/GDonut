@@ -104,7 +104,7 @@
 				style="display: flex; align-items: center; justify-content: flex-start"
 			>
 				<span
-					v-if="poly == ''"
+					v-if="isPolyEmpty"
 					class="absolute q-pl-sm"
 					style="color: grey; font-size: medium"
 				>
@@ -314,6 +314,10 @@ var timerCallShowGeneo = 0;
 // polynomial to be evaluated
 const poly = ref<string>("");
 
+// mange placeholder for the polynomial input
+const previousPoly = ref<string>("");
+const isPolyEmpty = ref(true);
+
 // drawer settings
 const drawerSize = 500;
 const leftDrawerOpen = true;
@@ -471,10 +475,15 @@ onMounted(() => {
 	canvasGeneo = document.getElementById("canvasGeneo");
 	filePicker = document.getElementById("filePicker");
 
+	const mf = document.getElementById("formula");
+
 	// binds the contents of the math field with the polynomial variable
-	if (document.getElementById("formula")) {
-		document.getElementById("formula")!.addEventListener("input", (ev: any) => {
+	// and show the placeholder if the polynomial is empty
+	if (mf) {
+		mf.addEventListener("input", (ev: any) => {
+			isPolyEmpty.value = ev.target.value == "" && previousPoly.value != "";
 			poly.value = ev.target.value;
+			previousPoly.value = poly.value;
 		});
 	}
 });

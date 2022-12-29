@@ -134,7 +134,7 @@
 									<li class="q-mt-sm">
 										<span>
 											<span style="color: #bb2e29">Use</span>
-											\sigma_n as the n-th elementary symmetric polynomial
+											sigma_n as the n-th elementary symmetric polynomial
 										</span>
 									</li>
 									<li class="q-mt-sm">
