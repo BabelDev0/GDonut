@@ -196,11 +196,6 @@
 									matrix and M is the maximum value, to the range [0, 255].
 								</p>
 								<p class="text-justify q-mt-md" style="font-size: 17px">
-									This is done by the program by mapping the range [m, M] to the
-									range [0, 255], where m is the minimum value of the pixel
-									belonging to the result matrix and M is the maximum value.
-								</p>
-								<p class="text-justify q-mt-md" style="font-size: 17px">
 									By mapping the range of values in the result matrix to the
 									range [0, 255], we can ensure to see the full range of colors
 									and details in the image, rather than having the image appear
