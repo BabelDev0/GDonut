@@ -403,6 +403,7 @@ const showGeneo = () => {
 		}
 	} catch (e) {
 		CanvasUtils.clearCanvas(canvasGeneo);
+		CanvasUtils.drawUtDRI(canvasGeneo);
 		console.log(e);
 		return;
 	}
