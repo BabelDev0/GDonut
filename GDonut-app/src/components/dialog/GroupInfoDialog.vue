@@ -168,7 +168,7 @@
 								</ul>
 								<p class="text-center" style="color: #bb2e29">
 									if the polynomial is formed incorrectly, the geneo canvas will
-									turn white
+									return an error
 								</p>
 							</div>
 						</div>
@@ -201,6 +201,13 @@
 									and details in the image, rather than having the image appear
 									as a flat black or white due to the overflow of values outside
 									of the range that can be displayed.
+								</p>
+								<p
+									class="text-justify q-mt-md"
+									style="font-size: 17px; color: #bb2e29"
+								>
+									due to transformation images with the same value on all RGB
+									channels cannot be shown
 								</p>
 							</div>
 						</div>
