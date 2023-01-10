@@ -421,13 +421,73 @@ export class PolynomialUtils {
     }
 
     /**
+     * Returns the maximum and the minimum value of the matrix 
+     * ignoring the alpha channel
+     * 
+     * @param matrix Matrix to be analyzed
+     */
+    getMatrixMinMax = (matrix: Matrix): MinMax => {
+        var M = -1;
+        var m = 256;
+
+        for (var i = 0; i < matrix.rows; i++) {
+            for (var j = 0; j < matrix.columns; j++) {
+                if ((j + 1) % 4 == 0) {
+                    // skip alpha channel
+                    continue;
+                }
+                var value = matrix.get(i, j);
+                if (value > M) {
+                    M = value;
+                }
+                if (value < m) {
+                    m = value;
+                }
+            }
+        }
+
+        return { min: m, max: M };
+    }
+
+    /**
+     * Returns the matrix after applying the operation on the matrix
+     * operation:nomalize -> normalize the matrix
+     * operation:divide -> divide the matrix by a constant
+     * 
+     * @param matrix Matrix to be analyzed
+     * @param operation operation to be applied
+     * @param params parameters of the operation
+     */
+    actOnMatrix = (matrix: Matrix, operation: string, ...params: number[]): Matrix => {
+        var result = matrix.clone();
+
+        for (var i = 0; i < result.rows; i++) {
+            for (var j = 0; j < result.columns; j++) {
+                if ((j + 1) % 4 == 0) {
+                    continue;
+                }
+                if (operation == "normalize") {
+                    // params[0] = m
+                    // params[1] = M
+                    result.set(i, j, (matrix.get(i, j) - params[0]) * 255 / (params[1] - params[0]));
+                }
+                if (operation == "divide") {
+                    // params[0] = geneoConst
+                    result.set(i, j, result.get(i, j) / params[0]);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Sets the maximum value reached by the data function image
      * 
      * @param matrix 
      */
     setMimg = (matrix: Matrix) => {
         var matrixAbs = matrix.abs();
-        this.Mimg = matrixAbs.max();
+        this.Mimg = this.getMatrixMinMax(matrixAbs).max;
     }
 
     /**
@@ -437,17 +497,15 @@ export class PolynomialUtils {
      * @returns geneo matrix mapped in the rage [0,255] in oreder to display it
      */
     geneoIn255 = (matrix: Matrix): Matrix => {
-        var M = matrix.max();
-        var m = matrix.min();
-
-
+        var minmax = this.getMatrixMinMax(matrix);
+        var M = minmax.max;
+        var m = minmax.min;
         var matrixIn255 = matrix.clone();
 
-        for (var i = 0; i < matrixIn255.rows; i++) {
-            for (var j = 0; j < matrixIn255.columns; j++) {
-                matrixIn255.set(i, j, (matrix.get(i, j) - m) * 255 / (M - m));
-            }
+        if (M == m) {
+            throw new Error("m=M impossible to normalize");
         }
+        matrixIn255 = this.actOnMatrix(matrixIn255, "normalize", m, M);
 
         return matrixIn255;
     }
@@ -648,15 +706,14 @@ export class PolynomialUtils {
 
             const geneoConst = this.getGeneoConstant(polynomialLatex);
             if (geneoConst != 0) {
-                matrixResult = matrixResult.div(geneoConst);
+                matrixResult = this.actOnMatrix(matrixResult, "divide", geneoConst);
             }
-            // map the result in the interval [0, 255]
             matrixResult = this.geneoIn255(matrixResult);
             parser.clear();
             return matrixResult;
         }
         else {
-            return null;
+            throw new Error("parser is null");
         }
     }
 }
