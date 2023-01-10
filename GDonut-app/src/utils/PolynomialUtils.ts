@@ -450,37 +450,6 @@ export class PolynomialUtils {
     }
 
     /**
-     * Returns the matrix after applying the operation on the matrix
-     * operation:nomalize -> normalize the matrix
-     * operation:divide -> divide the matrix by a constant
-     * 
-     * @param matrix Matrix to be analyzed
-     * @param operation operation to be applied
-     * @param params parameters of the operation
-     */
-    actOnMatrix = (matrix: Matrix, operation: string, ...params: number[]): Matrix => {
-        var result = matrix.clone();
-
-        for (var i = 0; i < result.rows; i++) {
-            for (var j = 0; j < result.columns; j++) {
-                if ((j + 1) % 4 == 0) {
-                    continue;
-                }
-                if (operation == "normalize") {
-                    // params[0] = m
-                    // params[1] = M
-                    result.set(i, j, (matrix.get(i, j) - params[0]) * 255 / (params[1] - params[0]));
-                }
-                if (operation == "divide") {
-                    // params[0] = geneoConst
-                    result.set(i, j, result.get(i, j) / params[0]);
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
      * Sets the maximum value reached by the data function image
      * 
      * @param matrix 
@@ -505,7 +474,16 @@ export class PolynomialUtils {
         if (M == m) {
             throw new Error("m=M impossible to normalize");
         }
-        matrixIn255 = this.actOnMatrix(matrixIn255, "normalize", m, M);
+
+        for (var i = 0; i < matrixIn255.rows; i++) {
+            for (var j = 0; j < matrixIn255.columns; j++) {
+                if ((j + 1) % 4 == 0) {
+                    // alpha channel 255
+                    matrixIn255.set(i, j, 255);
+                }
+                matrixIn255.set(i, j, (matrix.get(i, j) - m) * 255 / (M - m));
+            }
+        }
 
         return matrixIn255;
     }
@@ -706,7 +684,7 @@ export class PolynomialUtils {
 
             const geneoConst = this.getGeneoConstant(polynomialLatex);
             if (geneoConst != 0) {
-                matrixResult = this.actOnMatrix(matrixResult, "divide", geneoConst);
+                matrixResult = matrixResult.div(geneoConst);
             }
             matrixResult = this.geneoIn255(matrixResult);
             parser.clear();
