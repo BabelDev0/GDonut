@@ -1,6 +1,9 @@
 import { Matrix } from "ml-matrix";
 
 export class CanvasUtils {
+
+    static UtDRI: string = "public/UtDRI.png";
+
     /**
      * Return a matrix with the data of a canvas
      * 
@@ -41,6 +44,22 @@ export class CanvasUtils {
         var ctx = canvas.getContext("2d");
         if (ctx) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+
+    /**
+     * Draw image UDRI in a canvas
+     * 
+     * @param canvas canvas where to draw
+     */
+    static drawUtDRI(canvas: HTMLCanvasElement) {
+        var ctx = canvas.getContext("2d");
+        if (ctx) {
+            var img = new Image();
+            img.onload = function () {
+                ctx!.drawImage(img, 0, 0, canvas.width, canvas.height);
+            }
+            img.src = this.UtDRI;
         }
     }
 }
