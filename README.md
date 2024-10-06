@@ -1,3 +1,9 @@
+# ⚠️ Deprecated
+
+This project is no longer maintained.
+
+Feel free to fork or use the code as-is, but please be aware that no further updates, bug fixes, or support will be provided.
+
 # GDonut
 
 <div>
